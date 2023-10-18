@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>AnsChen&#39;s Home</title>
+  
+  <subtitle>Welcome to AnsChen&#39;s Home</subtitle>
+  <link href="https://anschen1994.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://anschen1994.github.io/"/>
+  <updated>2023-10-18T05:50:39.737Z</updated>
+  <id>https://anschen1994.github.io/</id>
+  
+  <author>
+    <name>AnsChen</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Bolza问题, Legendre变换，从最速降线说起</title>
+    <link href="https://anschen1994.github.io/2023/10/18/bolza/"/>
+    <id>https://anschen1994.github.io/2023/10/18/bolza/</id>
+    <published>2023-10-18T05:50:39.737Z</published>
+    <updated>2023-10-18T05:50:39.737Z</updated>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;bolza问题&quot;&gt;Bolza问题&lt;/h1&gt;
+&lt;h2 id=&quot;引言&quot;&gt;引言&lt;/h2&gt;
+&lt;p&gt;最近在学习The financial mathematics of market liquidity 和游戏中物理模拟的一些知识，发现这两个地方都涉及到了Bolza问题，决定单独把这块提取出来说一说。我们这边主要把Bolza问题集中在最小化这个小问题上面: &lt;span class=&quot;math display&quot;&gt;&#92;[
+J = &#92;int_{0}^T f_t(x(t)) + g_t(&#92;dot{x}(t))dt
+&#92;]&lt;/span&gt; 并且满足边界条件&lt;span class=&quot;math inline&quot;&gt;&#92;(x(0) = a, x(T) = b&#92;)&lt;/span&gt;。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="理论物理" scheme="https://anschen1994.github.io/categories/%E7%90%86%E8%AE%BA%E7%89%A9%E7%90%86/"/>
+    
+    
+    <category term="量子物理，机器学习" scheme="https://anschen1994.github.io/tags/%E9%87%8F%E5%AD%90%E7%89%A9%E7%90%86%EF%BC%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title></title>
+    <link href="https://anschen1994.github.io/2023/10/18/port_opt/"/>
+    <id>https://anschen1994.github.io/2023/10/18/port_opt/</id>
+    <published>2023-10-18T05:23:20.483Z</published>
+    <updated>2023-10-18T05:21:59.065Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html"></summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>linux工作环境配置</title>
+    <link href="https://anschen1994.github.io/2023/10/18/prepare_env/"/>
+    <id>https://anschen1994.github.io/2023/10/18/prepare_env/</id>
+    <published>2023-10-18T04:42:25.646Z</published>
+    <updated>2023-10-18T04:42:25.646Z</updated>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;prepare-work-env-for-linux&quot;&gt;Prepare Work Env for Linux&lt;/h1&gt;
+&lt;p&gt;Prepare your work environment for linux system&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS工程" scheme="https://anschen1994.github.io/categories/CS%E5%B7%A5%E7%A8%8B/"/>
+    
+    
+    <category term="软件" scheme="https://anschen1994.github.io/tags/%E8%BD%AF%E4%BB%B6/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Diffusion Map Method</title>
+    <link href="https://anschen1994.github.io/2023/10/18/diffusion_map/"/>
+    <id>https://anschen1994.github.io/2023/10/18/diffusion_map/</id>
+    <published>2023-10-18T04:42:25.636Z</published>
+    <updated>2023-10-18T04:42:25.636Z</updated>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;diffusion-map-method&quot;&gt;Diffusion map method&lt;/h1&gt;
+&lt;p&gt;本篇介绍一种半监督的算法，以及其在理论物理里面的应用&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="人工智能" scheme="https://anschen1994.github.io/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/"/>
+    
+    
+    <category term="量子物理，机器学习" scheme="https://anschen1994.github.io/tags/%E9%87%8F%E5%AD%90%E7%89%A9%E7%90%86%EF%BC%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>因果分析</title>
+    <link href="https://anschen1994.github.io/2023/10/18/nonlinear_analysis/"/>
+    <id>https://anschen1994.github.io/2023/10/18/nonlinear_analysis/</id>
+    <published>2023-10-18T04:42:25.636Z</published>
+    <updated>2023-10-18T04:42:25.636Z</updated>
+    
+    
+    <summary type="html">&lt;h1 id=&quot;非线性因果分析技术&quot;&gt;非线性因果分析技术&lt;/h1&gt;
+&lt;p&gt;在基础的统计学中，我们学过用协方差矩阵来表征两个高维随机变量&lt;span class=&quot;math inline&quot;&gt;&#92;(X=(X_1,X_2,&#92;cdots,X_n)^T, Y=(Y_1,Y_2,&#92;cdots, Y_m)^T&#92;)&lt;/span&gt;之间的相关性。但是，我们知道相关性并不意味着独立性，更加不能准确描述因果性。这篇Blog，我们将持续更新一些因果性分析工具。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="人工智能" scheme="https://anschen1994.github.io/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/"/>
+    
+    
+    <category term="机器学习" scheme="https://anschen1994.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+  </entry>
+  
+</feed>
