@@ -356,10 +356,16 @@ non-negative definite, if <span class="math display">\[
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-10-28 00:00:00 / Modified: 23:56:22" itemprop="dateCreated datePublished" datetime="2023-10-28T00:00:00+08:00">2023-10-28</time>
+              <time title="Created: 2023-10-28 00:00:00" itemprop="dateCreated datePublished" datetime="2023-10-28T00:00:00+08:00">2023-10-28</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-10-29 00:00:06" itemprop="dateModified" datetime="2023-10-29T00:00:06+08:00">2023-10-29</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -386,9 +392,9 @@ non-negative definite, if <span class="math display">\[
 <p>投资组合的优化是量化投资中非常重要的一个环节。假设我们有<span class="math inline">\(N\)</span>支资产，每个资产收集了<span class="math inline">\(T\)</span>时间的数据，用 <span class="math inline">\(X \in \mathrm{R}^{N \times T}\)</span>
 表示整个风险收益样本。在量化投资中最核心的两个问题就是：</p>
 <ul>
-<li>给定历史轨迹的条件下，预测未来时间的收益 $ [R_{t+1} |_{t}] $。</li>
-<li>给定历史轨迹的条件下，预测未来时间的各个资产之间的correlation,例如
-$<em>{t+1} | </em>{t} $。</li>
+<li>给定历史轨迹的条件下，预测未来时间的收益 <span class="math inline">\(\mathbb{E}[R_{t+1}
+|\mathcal{F}_{t}]\)</span>。</li>
+<li>给定历史轨迹的条件下，预测未来时间的各个资产之间的correlation,例如:<span class="math inline">\(\Sigma_{t+1} | \mathcal{F}_{t}\)</span>。</li>
 </ul>
 <p>如果能够很好得完成第一个任务，则就可以追求到人们梦寐以求的超额收益，于此我们也可以想象第一个问题的难度是如何地高，也超过了本篇Blog所想要讨论的范畴。</p>
 <p>我们这边主要会将讨论的内容局限在第二个问题上，假设存在一个上帝已经帮助我们解决了第一个问题，即我们已经拥有了一个相对不错的对未来收益估计的算法，使用记号<span class="math inline">\(\hat{\mu}_{t+1}\)</span> 代表我们对于 $ [R_{t+1}
