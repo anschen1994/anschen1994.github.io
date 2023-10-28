@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Successful Algorithm Trading 读后感 概览 算法交易和主观交易的对比 优点:  提高了投研效率 没有主观输入，受情绪影响较小 评价指标更加多维 更高的交易频率，人工操作不来  缺点:  需要一定的资金量 需要较高的科学素养和编程水平  散户和机构的对比 散户的优势:  小资金量更加灵活 对冲基金之间人员流动，会导致策略趋同，造成交易拥挤，散户的交易系统和这些关联较小 散">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Successful Algorithm Trading 读后感">
+<meta property="og:url" content="https://anschen1994.github.io/2023/10/28/successful_trading/index.html">
+<meta property="og:site_name" content="AnsChen&#39;s Home">
+<meta property="og:description" content="Successful Algorithm Trading 读后感 概览 算法交易和主观交易的对比 优点:  提高了投研效率 没有主观输入，受情绪影响较小 评价指标更加多维 更高的交易频率，人工操作不来  缺点:  需要一定的资金量 需要较高的科学素养和编程水平  散户和机构的对比 散户的优势:  小资金量更加灵活 对冲基金之间人员流动，会导致策略趋同，造成交易拥挤，散户的交易系统和这些关联较小 散">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-10-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-28T15:46:24.075Z">
+<meta property="article:author" content="AnsChen">
+<meta property="article:tag" content="量化投资">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://anschen1994.github.io/2023/10/28/successful_trading/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Successful Algorithm Trading 读后感 | AnsChen's Home</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="AnsChen's Home" type="application/atom+xml"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">AnsChen's Home</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Welcome to AnsChen's Home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/28/successful_trading/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Successful Algorithm Trading 读后感
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2023-10-28 00:00:00 / Modified: 23:46:24" itemprop="dateCreated datePublished" datetime="2023-10-28T00:00:00+08:00">2023-10-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%95%E8%B5%84/" itemprop="url" rel="index"><span itemprop="name">投资</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="successful-algorithm-trading-读后感">Successful Algorithm
+Trading 读后感</h1>
+<h2 id="概览">概览</h2>
+<h3 id="算法交易和主观交易的对比">算法交易和主观交易的对比</h3>
+<p>优点:</p>
+<ul>
+<li>提高了投研效率</li>
+<li>没有主观输入，受情绪影响较小</li>
+<li>评价指标更加多维</li>
+<li>更高的交易频率，人工操作不来</li>
+</ul>
+<p>缺点:</p>
+<ul>
+<li>需要一定的资金量</li>
+<li>需要较高的科学素养和编程水平</li>
+</ul>
+<h3 id="散户和机构的对比">散户和机构的对比</h3>
+<p>散户的优势:</p>
+<ul>
+<li>小资金量更加灵活</li>
+<li>对冲基金之间人员流动，会导致策略趋同，造成交易拥挤，散户的交易系统和这些关联较小</li>
+<li>散户的交易对市场价格的冲击可以忽略</li>
+</ul>
+<p>散户的劣势:</p>
+<ul>
+<li>对杠杆的使用有更多的限制</li>
+<li>散户的交易在券商的排队往往优先级较低，这会造成实盘和回测有较大差距</li>
+<li>信息数据滞后</li>
+</ul>
+<p>散户对于风险管理相比于基金来说，会更加自由，完全取决于个人的风险偏好。这有好有坏，往往这也会让散户忽略风险管理，把绝大部分时间放在构建交易策略上。</p>
+<p>散户不需要关注交易曲线，不需要和投资者打交道，不需要定期公布事项满足监管，不需要和同行比，不需要和被动投资比。
+散户只需要关注的就是绝对收益。</p>
+<h2 id="回测">回测</h2>
+<h3 id="为什么需要回测">为什么需要回测</h3>
+<p>回测可以帮助做到下面几点：</p>
+<ul>
+<li>筛选：可以快速帮我筛选策略</li>
+<li>建模：可以快速验证对市场的想法</li>
+<li>优化：可以精细打磨自己的策略</li>
+</ul>
+<h3 id="回测过程中常见的偏差bias">回测过程中常见的偏差(Bias)</h3>
+<p>我们通过回测慢慢迭代自己的策略的时候，往往也引入了很多的偏差(Bias)，常见的有：</p>
+<ul>
+<li>优化偏差(Optimisation Bias)
+<ul>
+<li>过拟合数据，包括模型，策略超参数等等</li>
+</ul></li>
+<li>未来信息(Look ahead Bias)</li>
+<li>幸存偏差(Survivorship Bias)
+<ul>
+<li>每年有大量的股票退市，但是往往数据集里面只会包含存活至今的股票数据</li>
+</ul></li>
+<li>主观偏差(Cognitive Bias)
+<ul>
+<li>面对回测曲线里面最大回撤在25%，可能较容易接受。但是实盘面对如此的回测往往难以忍受，因此很多策略终止在低点。</li>
+</ul></li>
+</ul>
+<h3 id="交易损耗">交易损耗</h3>
+<p>交易过程中带来的损耗包括但不限于：</p>
+<ul>
+<li>手续费
+<ul>
+<li>印花税</li>
+<li>佣金</li>
+<li>...</li>
+</ul></li>
+<li>滑点(Slippage)
+<ul>
+<li>交易信号对应的价格和实际价格之间的差距</li>
+<li>主要因素包括：波动性，延迟，交易频率</li>
+</ul></li>
+<li>市场冲击</li>
+</ul>
+<h3 id="交易风格">交易风格</h3>
+<p>在确定自己的交易风格之前，我们需要从下面几个方面出发： -
+你的性格是什么样子的 - 你所允许的交易时间是怎么样的</p>
+<h2 id="时间序列分析">时间序列分析</h2>
+<p>这一节关于时间序列分析的相关算法，作者讲得非常简洁，不值得记录。</p>
+<h2 id="预测">预测</h2>
+<p>这边作者只是简单减少了一些常见的机器学习算法，例如逻辑回归，线性回归，支持向量机，随机森林等等，以及机器学习当中常见的对于结果判别的方法。</p>
+<h2 id="业绩归因-风险管理">业绩归因 &amp;&amp; 风险管理</h2>
+<p>从各个level的业绩归因，可以更好地回溯整个交易系统的问题。一般可以从如下几个方面看待整个业绩的表现:</p>
+<ul>
+<li>策略
+<ul>
+<li>策略在回测中的模拟</li>
+<li>策略在模拟盘中的表现(模拟盘交易误差几乎可以忽略)</li>
+</ul></li>
+<li>交易执行
+<ul>
+<li>衡量策略提供的交易信号和现实交易执行产生的误差</li>
+</ul></li>
+<li>投资组合管理
+<ul>
+<li>是否存在更加合理的投资组合管理，可以降低交易的损耗</li>
+</ul></li>
+</ul>
+<p>那么何为上述所说的"业绩"呢，一般我们需要从下面几个角度去考虑:</p>
+<ul>
+<li>收益
+<ul>
+<li>总收益: 计算的时候需要考虑杠杆，做空等等因素</li>
+<li>复合年化收益</li>
+</ul></li>
+<li>风险
+<ul>
+<li>回撤(DrawDown)</li>
+<li>收益的波动率</li>
+</ul></li>
+<li>风险收益
+<ul>
+<li>Sharpe Ratio: <span class="math inline">\(\sqrt{N}\frac{\mathbb{E}[R_{\alpha}-
+R_{\beta}]}{\sqrt{\mathbb{Var}[R_{\alpha} - R_{\beta}]}}\)</span>,
+这边<span class="math inline">\(N\)</span>为一年内交易日数目，如果你的收益是按照天计算的话。<span class="math inline">\(R_{\alpha} - R_{\beta}\)</span>
+代表超额收益。其中Benchmark可以选择为对应的ETF.</li>
+<li>Sortino Ratio: <span class="math inline">\(\sqrt{N}\frac{\mathbb{E}[R_{\alpha}-
+R_{\beta}]}{\sqrt{\mathbb{Var}[R_{\alpha} - R_{\beta}]}_d}\)</span>.
+这边的下标<span class="math inline">\(d\)</span>代表我们只考虑，当超额收益为负的时候波动率，因为亏损的波动，更加容易交易情绪的波动。</li>
+<li>Calmar Ratio: <span class="math inline">\(\sqrt{N}\frac{\mathbb{E}[R_{\alpha}-
+R_{\beta}]}{\max \mathbf{drawdown}}\)</span>.</li>
+</ul></li>
+<li>交易指标
+<ul>
+<li>PnL</li>
+<li>Average Period PnL</li>
+<li>Maximum Period Profit</li>
+<li>Maximum Period Loss</li>
+<li>Average Period Profit</li>
+<li>Average Period Loss</li>
+<li>Wining Period</li>
+<li>Losing Period</li>
+<li>Percentage Win/Loss Periods</li>
+</ul></li>
+</ul>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%87%8F%E5%8C%96%E6%8A%95%E8%B5%84/" rel="tag"># 量化投资</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/01/01/ess_rl/" rel="prev" title="Replicator Dynamics and reinforcement learning">
+      <i class="fa fa-chevron-left"></i> Replicator Dynamics and reinforcement learning
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/10/28/port_opt/" rel="next" title="Portfolio Optimization">
+      Portfolio Optimization <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#successful-algorithm-trading-读后感"><span class="nav-number">1.</span> <span class="nav-text">Successful Algorithm
+Trading 读后感</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概览"><span class="nav-number">1.1.</span> <span class="nav-text">概览</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#算法交易和主观交易的对比"><span class="nav-number">1.1.1.</span> <span class="nav-text">算法交易和主观交易的对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#散户和机构的对比"><span class="nav-number">1.1.2.</span> <span class="nav-text">散户和机构的对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#回测"><span class="nav-number">1.2.</span> <span class="nav-text">回测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么需要回测"><span class="nav-number">1.2.1.</span> <span class="nav-text">为什么需要回测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回测过程中常见的偏差bias"><span class="nav-number">1.2.2.</span> <span class="nav-text">回测过程中常见的偏差(Bias)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交易损耗"><span class="nav-number">1.2.3.</span> <span class="nav-text">交易损耗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交易风格"><span class="nav-number">1.2.4.</span> <span class="nav-text">交易风格</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#时间序列分析"><span class="nav-number">1.3.</span> <span class="nav-text">时间序列分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#预测"><span class="nav-number">1.4.</span> <span class="nav-text">预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#业绩归因-风险管理"><span class="nav-number">1.5.</span> <span class="nav-text">业绩归因 &amp;&amp; 风险管理</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">AnsChen</p>
+  <div class="site-description" itemprop="description">Theoretical physics PhD, working on GameAI, interested at quantitative investment</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/anschen1994" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;anschen1994" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:anschen1994@gmail.com" title="E-Mail → mailto:anschen1994@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnsChen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+
+  <script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize(JSON.stringify());
+    }
+  </script>
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'forest',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+    
+
+  
+
+</body>
+</html>

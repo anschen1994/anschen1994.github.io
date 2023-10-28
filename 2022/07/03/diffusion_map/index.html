@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Diffusion map method 本篇介绍一种半监督的算法，以及其在理论物理里面的应用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Diffusion Map Method">
+<meta property="og:url" content="https://anschen1994.github.io/2022/07/03/diffusion_map/index.html">
+<meta property="og:site_name" content="AnsChen&#39;s Home">
+<meta property="og:description" content="Diffusion map method 本篇介绍一种半监督的算法，以及其在理论物理里面的应用">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://anschen1994.github.io/2022/07/03/diffusion_map/original.png">
+<meta property="og:image" content="https://anschen1994.github.io/2022/07/03/diffusion_map/two_dim.png">
+<meta property="og:image" content="https://anschen1994.github.io/2022/07/03/diffusion_map/prl1.png">
+<meta property="og:image" content="https://anschen1994.github.io/2022/07/03/diffusion_map/prl2.png">
+<meta property="article:published_time" content="2022-07-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-28T15:32:36.067Z">
+<meta property="article:author" content="AnsChen">
+<meta property="article:tag" content="量子物理，机器学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://anschen1994.github.io/2022/07/03/diffusion_map/original.png">
+
+<link rel="canonical" href="https://anschen1994.github.io/2022/07/03/diffusion_map/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Diffusion Map Method | AnsChen's Home</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="AnsChen's Home" type="application/atom+xml"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">AnsChen's Home</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Welcome to AnsChen's Home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/07/03/diffusion_map/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Diffusion Map Method
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-07-03 00:00:00" itemprop="dateCreated datePublished" datetime="2022-07-03T00:00:00+08:00">2022-07-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-10-28 23:32:36" itemprop="dateModified" datetime="2023-10-28T23:32:36+08:00">2023-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="diffusion-map-method">Diffusion map method</h1>
+<p>本篇介绍一种半监督的算法，以及其在理论物理里面的应用 <a id="more"></a></p>
+<h2 id="引言">引言</h2>
+<p>这篇的Blog的源于，最近读到了一篇<strong>PRL</strong>的paper《Unsupervised
+machine learning of quantum phase transitions using diffusion maps》
+(https://arxiv.org/pdf/2003.07399.pdf)。
+这篇文章使用了<code>DMM</code>（diffusion map
+method）来分析量子相变的一些特性，还是蛮有意思的，我会在这边Blog介绍完<code>DMM</code>方法之后，大概说一下其中的一些想法。</p>
+<p>在打开这篇paper之前，在我陈旧的机器学习知识框架里，确实没有<code>DMM</code>这个东西，然后我就去好奇去Google了一下，大概发现了两篇有用的paper。</p>
+<ul>
+<li>第一篇是2005年<strong>PNAS</strong>（https://www.pnas.org/doi/epdf/10.1073/pnas.0500334102)，由Yale几位科学家提出来的，将<code>DMM</code>用来做调和分析的工具。</li>
+<li>第二篇(https://inside.mines.edu/~whereman/papers/delaPorte-Herbst-Hereman-vanderWalt-PRASA-2008.pdf)是一篇不错的tutorial性质的文章。</li>
+</ul>
+<p>读完这些，<code>DMM</code>这个方法让我惊艳的地方，一句话大概是：</p>
+<blockquote>
+<p>NOTE 从局部性质衍生全局性质，进而进行分析的一种算法</p>
+</blockquote>
+<p>正如第一篇PNAS中所说：</p>
+<p><em>The process of iterating or diffusing the Markov matrix is seen
+as a generalization of some aspects of the Newtonian paradigm, in which
+local infinitesimal transitions of a systemlead to global macroscopic
+descriptions by integration.</em></p>
+<h2 id="dmmdifussion-map-method">DMM(Difussion map method)</h2>
+<p>算法<code>DMM</code>大概用两种用途：</p>
+<ul>
+<li>数据降维</li>
+<li>聚类</li>
+</ul>
+<p>当然一个算法如果能很好地对数据进行降维，额外做数据的聚类也是一个简单的任务，比如结合K-Means等等这种常规算法。下面我们就主要介绍降维方面的一些想法</p>
+<h3 id="现有的算法">现有的算法</h3>
+<h4 id="pca">PCA</h4>
+<p>提到数据降维，我想作为炼丹师，一下能够想到很多出名的算法，其中不得不说，非<code>PCA</code>(principal
+component
+analysis)莫属。当然<code>PCA</code>是一个线性算法。这可以从几方面来理解。
+- 从代数的角度，<code>PCA</code>
+算法用到的操作都是一个线性空间的线性操作 -
+从几何的角度，<code>PCA</code>
+只是通过旋转坐标轴的，找到那些数据高区分度的坐标轴进行保留。</p>
+<p>这其中最关键的，所谓的在线性空间进行线性操作，无论怎么搞，坐标轴永远是“直”的。但是我们知道，比如我空间里一条曲线，在“直”的坐标系下面仍然需要三个坐标去描述，但是实际上，一条曲线的有效的维度永远是一维的（当然这边描述不够严谨，比如也是有一些奇怪的曲线维度是分数维的，这边只是对于那种普通的曲线，供大家理解）。
+例如，下面这条曲线上，我用三种颜色表示了三个聚类，在这种数据下，我们是没有办法使用PCA去做数据降维或者聚类分析。
+<img src="/2022/07/03/diffusion_map/original.png" class="" title="This is an image"></p>
+<h4 id="mdsmutidimensional-scaling">MDS(Mutidimensional Scaling)</h4>
+<p>算法<code>MDS</code>的idea，我觉得是非常棒的，比<code>PCA</code>更加自然，也是如果一个没有学过机器学习的人，让他来做数据降维，最容易想到的一个做法。这边我们简单描述这个想法：</p>
+<blockquote>
+<p>假设我们有个<span class="math inline">\(N\)</span>个数据点<span class="math inline">\(x_i\)</span>，我们需要找一个map，将每个<span class="math inline">\(x_i\)</span>映射到<span class="math inline">\(y_i\)</span>，还尽可能保留数据之间的"关系"。比如找到一种数据描述<span class="math inline">\(d_X,d_Y\)</span>来建模这种"关系"。那么对于任意<span class="math inline">\(d_X(x_i,x_j)\)</span>， 我们希望<span class="math inline">\(d_X(x_i,x_j)\)</span>小(大)的，映射之后对应的关系<span class="math inline">\(d_Y(y_i,y_j)\)</span>也小(大)。</p>
+</blockquote>
+<p>当然<code>MDS</code>采用了欧式距离来建模这种“关系”，这也是这个方法的局限，毕竟欧式距离做为线性结构的度量是不错的，但是如果数据之间的关系是非线性的，那么欧式距离只是在邻域内看作是一个相对有效的表达。</p>
+<h4 id="dmm">DMM</h4>
+<p>那么在我们不知道数据的几何结构的时候（如果知道，只需要拟合即可，问题就会简单了），我们如果才能如何有效地表达出<span class="math inline">\(d_X,
+d_Y\)</span>呢。<code>DMM</code>提出了一个核心想法： &gt;
+通过扩散过程，衔接局部性质和全局性质</p>
+<p>这种想法在物理研究其实很常见：</p>
+<ul>
+<li>牛顿力学或是量子力学都是通过建立微分方程(局部)，然后积分求解，得到一些宏观的可观测量(全局)</li>
+<li>蒙特卡洛模拟，也是使用局部的概率进行模拟，通过Hamiltonian带来的相互作用，将整个影响传播至全局，最后得一个平衡态。</li>
+<li>等等</li>
+</ul>
+<p>在<code>DMM</code>算法中通过一个核函数<span class="math inline">\(k(x_i,x_j)\)</span>来模拟原始数据之间的局部关系，比如常用的高斯核<span class="math inline">\(k(x_i,x_j) =
+e^{-\frac{\|x_i-x_j\|^2}{2\epsilon}}\)</span>。拥有了核函数对应的矩阵<span class="math inline">\(K_{ij}:=k(x_i,x_j)\)</span>，我们可以对每一行进行归一化，得到一个符合转移矩阵的要求矩阵<span class="math inline">\(P:=D^{-1}K\)</span>，这边<span class="math inline">\(D\)</span>是一个对角矩阵，每个元素是对应行的<span class="math inline">\(K\)</span>矩阵的元素之和。那么这个扩散过程，我们就可以通过<span class="math inline">\(P, P^2, P^3, \cdots, P^t,
+\cdots\)</span>来模拟。假设我们模拟了<span class="math inline">\(t\)</span>步，概率流在这个图中流淌了一段时间，局部的性质通过这种流淌，慢慢全局化。
+那么这时候需要一个问题，在这种建模的情况，我们如何去描述第<span class="math inline">\(i\)</span>和<span class="math inline">\(j\)</span>数据之间的关系呢？回答好这个问题，那么<code>DMM</code>的算法就完毕了，剩余的只是一些不那么关键的数学推导了。在当前的建模情况，<span class="math inline">\(P\)</span>矩阵的第<span class="math inline">\(i\)</span>行表示的第<span class="math inline">\(i\)</span>组数据和其他数据之间的转移概率。那么描述<span class="math inline">\(i\)</span>和<span class="math inline">\(j\)</span>的相似度，其实就变得很简单了，就是描述两个概率分布之间的相似度。最常见的两种就是：</p>
+<ul>
+<li>L2 <span class="math inline">\(\sum_k
+|P^t_{ik}-P^t_{jk}|^2\)</span></li>
+<li>CrossEntropy <span class="math inline">\(-\sum_k P^t_{ik}\log
+P^t_{jk}\)</span></li>
+</ul>
+<p>当然在<code>DMM</code>算法中他选择了第一种描述关系，这是为了他做数据降维方便而做的选择。正如我们之前说的L2是一个描述线性结构的度量方式，选择了<span class="math inline">\(L2\)</span>就是采用数据经过扩散过程之后，局部的关系变成了全局的关系，并且全局的关系进入了一个相对平坦的子流形上去了。</p>
+<blockquote>
+<p>这边我自己也很好奇，如果我选用第二种相似度描述方式，该如何去做数据降温呢？</p>
+</blockquote>
+<p>到了这一步，我们拥有了一个数据的有效表示<span class="math inline">\(P^t_{i*}\)</span>，同时还假设了线性，那么这个时候使用什么方式去做数据降维那么就是显而易见了，我们只需要对<span class="math inline">\(P^t\)</span>做一次<code>PCA</code>，就可以做到了。当然了在原始的paper，研究人员使用了一些数学手段简化了这个<code>PCA</code>过程，有兴趣的可以看看附录吧。</p>
+<p>到了这边，有了数据表示和数据相似度的数学建模，那么除了数据降维，去做一个聚类任务也是比较简单的事情了。比如对上面的那组测试数据，我们使用<code>DMM</code>降三维数据降到二维，得到下面的结果
+<img src="/2022/07/03/diffusion_map/two_dim.png" class="" title="This is an image"> 我们很容易得出下面两点结论：</p>
+<ul>
+<li>数据的order得到了保证，蓝-橘-绿</li>
+<li>数据变得更加的紧致</li>
+</ul>
+<p>如果降维到一维的结果，就是把上面这个图向<span class="math inline">\(x\)</span>轴投影，我们会发现上面的两点结论仍然是成立的。
+这个Demo的例子可以用下面这段生成</p>
+<p></p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">import numpy as np</span><br><span class="line">from mpl_toolkits.mplot3d import Axes3D</span><br><span class="line"></span><br><span class="line">def gaussian_kernel(point1, point2, alpha: float = 0.01):</span><br><span class="line">    return np.exp(-np.linalg.norm(point1 - point2)**2 / alpha)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class DiffusionMap:</span><br><span class="line">    """</span><br><span class="line">    a simple realization of diffusion map method</span><br><span class="line">    """</span><br><span class="line">    def __init__(self):</span><br><span class="line">        pass</span><br><span class="line"></span><br><span class="line">    @staticmethod</span><br><span class="line">    def diff_map(data: np.ndarray, kernel_func, keep_dim: int = 2):</span><br><span class="line">        """</span><br><span class="line">        Params:</span><br><span class="line">        -------------------</span><br><span class="line">        data: N x M numpy array, N data points with original dimension M</span><br><span class="line">        kernel_func: a function, give the measure between two data points</span><br><span class="line">        keep_dime: int, the number of dimension left</span><br><span class="line">        """</span><br><span class="line">        data_num = data.shape[0]</span><br><span class="line">        kernel_mat = np.zeros((data_num, data_num))</span><br><span class="line">        for i in range(data_num):</span><br><span class="line">            for j in range(data_num):</span><br><span class="line">                kernel_mat[i, j] = kernel_func(data[i, :], data[j, :])</span><br><span class="line">        normalize_mat = np.diag(np.sum(kernel_mat, axis=1))</span><br><span class="line">        normalize_mat_sqrt = np.sqrt(normalize_mat)</span><br><span class="line">        normalize_mat_sqrt_inv = np.linalg.inv(normalize_mat_sqrt)</span><br><span class="line">        transition_mat_sim = normalize_mat_sqrt_inv.dot(kernel_mat).dot(normalize_mat_sqrt_inv)</span><br><span class="line">        print("symmetry error:", np.sum(np.abs(transition_mat_sim - transition_mat_sim.T)))</span><br><span class="line">        # transition_mat = kernel_mat / np.sum(kernel_mat, axis=1, keepdims=True)</span><br><span class="line">        eig_vals, eig_vecs_sim = np.linalg.eig(transition_mat_sim)</span><br><span class="line">        # print("eig_vals:", eig_vals)</span><br><span class="line">        eig_vals_sort = np.sort(eig_vals)[::-1]</span><br><span class="line">        eig_vals_sort_index = np.argsort(eig_vals)[::-1]</span><br><span class="line">        eig_vecs_tran = normalize_mat_sqrt_inv.dot(eig_vecs_sim)</span><br><span class="line">        if keep_dim &gt; data_num - 1:</span><br><span class="line">            keep_dim = data_num - 1</span><br><span class="line">        diffusion_map = np.zeros((data_num, keep_dim))</span><br><span class="line">        for i in range(keep_dim):</span><br><span class="line">            val = eig_vals_sort[i+1]</span><br><span class="line">            eig_vec = eig_vecs_tran[:, eig_vals_sort_index[i+1]]</span><br><span class="line">            print("norm:", np.linalg.norm(eig_vec))</span><br><span class="line">            diffusion_map[:, i] = val * eig_vec</span><br><span class="line">        return diffusion_map</span><br><span class="line"></span><br><span class="line">if __name__ == "__main__":</span><br><span class="line">    n = 300</span><br><span class="line">    r = np.linspace(0, 1, n)</span><br><span class="line">    theta = np.linspace(0, 6 * np.pi, n)</span><br><span class="line">    phi = np.linspace(0, np.pi / 4, n)</span><br><span class="line">    x = r * np.cos(theta) * np.cos(phi)</span><br><span class="line">    y = r * np.sin(theta) * np.cos(phi)</span><br><span class="line">    z = r * np.sin(phi)</span><br><span class="line">    fig1 = plt.figure()</span><br><span class="line">    ax1 = Axes3D(fig1)</span><br><span class="line">    ax1.scatter(x[:100], y[:100], z[:100])</span><br><span class="line">    ax1.scatter(x[100:200], y[100:200], z[100:200])</span><br><span class="line">    ax1.scatter(x[200:], y[200:], z[200:])</span><br><span class="line">    data = np.concatenate([x.reshape(-1,1), y.reshape(-1,1), z.reshape(-1,1)], axis=1)</span><br><span class="line">    reduce_data = DiffusionMap.diff_map(data, gaussian_kernel)</span><br><span class="line">    fig2 = plt.figure()</span><br><span class="line">    plt.scatter(reduce_data[:100,0], reduce_data[:100,1])</span><br><span class="line">    plt.scatter(reduce_data[100:200,0], reduce_data[100:200,1])</span><br><span class="line">    plt.scatter(reduce_data[200:,0], reduce_data[200:,1])</span><br><span class="line">    plt.show()</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="使用dmm研究量子相变">使用DMM研究量子相变</h2>
+<p>这边主要是展示一下之前那篇<strong>PRL</strong>的其中之一的一个工作。在这边文章中，作者使用DMM来做聚类任务，认为类别的数目可以作为一个宏观的量来描述各种物理相。</p>
+首先，咱们先把物理抛在脑后，先思考一个问题<span class="math inline">\(\epsilon\)</span>和聚类的数目的关系应该是什么样子的。
+<img src="/2022/07/03/diffusion_map/prl1.png" class="" title="This is an image">
+<center>
+特征半径和聚类数目的关系
+</center>
+<p>如上图中蓝线所示，我们可以想象，当<span class="math inline">\(\epsilon\)</span>很小的时候，核函数衰减得非常快，那么每个数据点，就很容易被隔离开，自己单独形成一个聚类。随着<span class="math inline">\(\epsilon\)</span>的慢慢增大，一些相近的数据点之间的连接逐渐形成，那么聚类开始成团簇状。直到<span class="math inline">\(\epsilon\)</span>变得很大，核函数在整个尺度都不怎么衰减，所有数据点构成一个团簇。显然，中间的这种状态是比较有意思的情况，两端的情况则相对trivial。</p>
+<p>下面作者用了一个理论物理常用的模型， <span class="math inline">\(Z_3\)</span>的横场Ising模型，哈密顿量可以写成下面这种形式:
+<span class="math display">\[
+H = -f \sum_{j=1}^N \tau_j e^{i\theta} - (1 - f)\sum_{j=1}^N \sigma_j
+\sigma_{j+1}^{\dagger}e^{i\theta} + h.c.
+\]</span> 众所周知，这个模型： - 在没有手性的情况(<span class="math inline">\(\theta=0\)</span>)，有两个相，铁磁相和顺磁相。 -
+在有手性的情况(<span class="math inline">\(\theta &gt; 0\)</span>),
+在铁磁和顺磁之间，还有一个额外的相IC(incommensurate phase,
+我也不知道中文是啥)。这个中间相不同铁磁和顺磁那么好区分。因为它的自发磁化强度也是0，因此<span class="math inline">\(\sum_{j=1}^N \langle \sigma_j \rangle\)</span>
+作为一个宏观可观测量，不足以区分这两种相。</p>
+<p>这边作者通过测量哈密顿量对应的基态对应的磁化强度，得到了一些数据点<span class="math inline">\(\vec{M}_i\)</span>，然后通过对这些数据点，使用<code>DMM</code>做聚类分析，画出了不同的参数<span class="math inline">\(f,\theta\)</span>下面，对应的聚类数目密度图，惊喜地发现（如图）：
+<img src="/2022/07/03/diffusion_map/prl2.png" class="" title="This is an image"> - 选择不同的<span class="math inline">\(\epsilon\)</span>
+可以得到不同的相图 - 选择合适的<span class="math inline">\(\epsilon\)</span>，可以很好根据聚类的数目，区分出来三种相，和物理的结果吻合。</p>
+<h2 id="dmm数学简化">DMM数学简化</h2>
+<p>对于给定的一个核矩阵<span class="math inline">\(K\)</span>，
+我们可以得到转移矩阵<span class="math inline">\(P=D^{-1}K\)</span>，正如之前说的。显然，<span class="math inline">\(P\)</span>在大部分的情况下，都不是一个实对称的矩阵，我们可以通过简单的转化，分析<span class="math inline">\(Q =
+D^{-\frac{1}{2}}KD^{-\frac{1}{2}}\)</span>来探索<span class="math inline">\(P\)</span>的一些性质。很显然，</p>
+<ul>
+<li><span class="math inline">\(P\)</span>和<span class="math inline">\(Q\)</span>是一对相似矩阵</li>
+<li><span class="math inline">\(Q\)</span>是实对称的</li>
+</ul>
+<p>那么我们可以轻松地在实数域内，对<span class="math inline">\(Q\)</span>做对角化，得到其对应的特征值<span class="math inline">\(1=\lambda_0\ge \lambda_i \ge \cdots \ge
+\lambda_{N-1} \ge 0\)</span> 和对应的特征向量<span class="math inline">\(v_0, v_1, \cdots,
+v_{N-1}\)</span>。那么我们很容易发现<span class="math inline">\(P\)</span>矩阵的右特征向量为<span class="math inline">\(u_0:=D^{-\frac{1}{2}}v_0,
+u_1:=D^{-\frac{1}{2}}v_1, \cdots\)</span> 和 左特征向量 <span class="math inline">\(w_0 := D^{\frac{1}{2}}v_0, w_1 =
+D^{\frac{1}{2}}v_1, \cdots\)</span>。那么<span class="math inline">\(P\)</span>的谱分解可以写成： <span class="math display">\[
+P = \sum_{j=0}^{N-1}\lambda_j u_j w_j^T
+\]</span> 同时<span class="math inline">\(t\)</span>-step
+的转移矩阵可以写成: <span class="math display">\[
+P^t = \sum_{j=0}^{N-1}\lambda_j^t u_j w_j^T
+\]</span> 那么在<span class="math inline">\(\{w_j\}_{j=1}^{N-1}\)</span>构成的坐标系下面，第<span class="math inline">\(i\)</span>组数据的表达就是<span class="math inline">\((\lambda_0^t u_0(i), \lambda_1^t u_1(i), \cdots,
+\lambda_{N-1}^t u_{N-1}(i))\)</span>。使用者可以根据需求对<span class="math inline">\(0\)</span>到<span class="math inline">\(N-1\)</span>之间的dimension选择适合的维度进行，然后做数据降维。</p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%87%8F%E5%AD%90%E7%89%A9%E7%90%86%EF%BC%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag"># 量子物理，机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/01/nonlinear_analysis/" rel="prev" title="因果分析">
+      <i class="fa fa-chevron-left"></i> 因果分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/25/time_series/" rel="next" title="Time Series Analysis">
+      Time Series Analysis <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#diffusion-map-method"><span class="nav-number">1.</span> <span class="nav-text">Diffusion map method</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dmmdifussion-map-method"><span class="nav-number">1.2.</span> <span class="nav-text">DMM(Difussion map method)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#现有的算法"><span class="nav-number">1.2.1.</span> <span class="nav-text">现有的算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pca"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">PCA</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mdsmutidimensional-scaling"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">MDS(Mutidimensional Scaling)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dmm"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">DMM</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用dmm研究量子相变"><span class="nav-number">1.3.</span> <span class="nav-text">使用DMM研究量子相变</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dmm数学简化"><span class="nav-number">1.4.</span> <span class="nav-text">DMM数学简化</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">AnsChen</p>
+  <div class="site-description" itemprop="description">Theoretical physics PhD, working on GameAI, interested at quantitative investment</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/anschen1994" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;anschen1994" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:anschen1994@gmail.com" title="E-Mail → mailto:anschen1994@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnsChen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+
+  <script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize(JSON.stringify());
+    }
+  </script>
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'forest',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+    
+
+  
+
+</body>
+</html>

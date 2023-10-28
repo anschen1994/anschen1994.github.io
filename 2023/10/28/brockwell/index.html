@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="时间序列阅读笔记 引言 通用的时间序列建模方法 操作步骤：  画出主要feature的图，并查看  是否有一个趋势(Trend) 是否有周期的成分(Period) 是否有突变(Sharp change) 是否有异常值(Outlier)  移除趋势和周期项，获得一个接近静态的时间序列 建模拟合剩余的残差项 预测残差，并加上趋势和周期项，获得最终的预测值  静态模型  Def: Weakly Stat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="时间序列阅读笔记">
+<meta property="og:url" content="https://anschen1994.github.io/2023/10/28/brockwell/index.html">
+<meta property="og:site_name" content="AnsChen&#39;s Home">
+<meta property="og:description" content="时间序列阅读笔记 引言 通用的时间序列建模方法 操作步骤：  画出主要feature的图，并查看  是否有一个趋势(Trend) 是否有周期的成分(Period) 是否有突变(Sharp change) 是否有异常值(Outlier)  移除趋势和周期项，获得一个接近静态的时间序列 建模拟合剩余的残差项 预测残差，并加上趋势和周期项，获得最终的预测值  静态模型  Def: Weakly Stat">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-10-28T15:12:16.637Z">
+<meta property="article:modified_time" content="2023-10-28T15:49:34.880Z">
+<meta property="article:author" content="AnsChen">
+<meta property="article:tag" content="数据分析，机器学习">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://anschen1994.github.io/2023/10/28/brockwell/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>时间序列阅读笔记 | AnsChen's Home</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="AnsChen's Home" type="application/atom+xml"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">AnsChen's Home</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Welcome to AnsChen's Home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/28/brockwell/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          时间序列阅读笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2023-10-28 23:12:16 / Modified: 23:49:34" itemprop="dateCreated datePublished" datetime="2023-10-28T23:12:16+08:00">2023-10-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="时间序列阅读笔记">时间序列阅读笔记</h1>
+<h2 id="引言">引言</h2>
+<h3 id="通用的时间序列建模方法">通用的时间序列建模方法</h3>
+<p>操作步骤：</p>
+<ul>
+<li>画出主要feature的图，并查看
+<ul>
+<li>是否有一个趋势(Trend)</li>
+<li>是否有周期的成分(Period)</li>
+<li>是否有突变(Sharp change)</li>
+<li>是否有异常值(Outlier)</li>
+</ul></li>
+<li>移除趋势和周期项，获得一个接近静态的时间序列</li>
+<li>建模拟合剩余的残差项</li>
+<li>预测残差，并加上趋势和周期项，获得最终的预测值</li>
+</ul>
+<h3 id="静态模型">静态模型</h3>
+<blockquote>
+<p><strong>Def</strong>: Weakly Stationary A time series <span class="math inline">\({X_t}\)</span> is called weakly stationary, if 1.
+<span class="math inline">\(\mu_X(t)\)</span> is independent of time
+<span class="math inline">\(t\)</span> 2. <span class="math inline">\(\gamma_X(t+h,t)\)</span> is independent of time
+<span class="math inline">\(t\)</span> for each <span class="math inline">\(h\)</span>, where <span class="math inline">\(\gamma_X(r, s) = Cov(X_r, X_s)\)</span></p>
+</blockquote>
+<p>对于一个静态序列来说，<span class="math inline">\(\gamma_X(h):=\gamma_X(0,h)=\gamma_X(t,t+h)\)</span>,
+此时，我们称<span class="math inline">\(\gamma_X(h)\)</span>
+为自协方差(auto covariance function).</p>
+<blockquote>
+<p><strong>Def</strong>: AutoCorrelation Function(自相关函数) <span class="math inline">\(\rho_X(h) =
+\frac{\gamma_X(h)}{\gamma_X(0)}\)</span></p>
+</blockquote>
+<h3 id="估计趋势和周期">估计趋势和周期</h3>
+<p>假设一个时间序列由三个部分构成： <span class="math display">\[
+X_t = m_t + s_t + Y_t
+\]</span> 其中<span class="math inline">\(m_t,
+s_t\)</span>分别表示确定性的趋势项，周期项。<span class="math inline">\(Y_t\)</span>剩余的一个带有随机性的静态序列。这节我们简单介绍一下一些简单的方法估计<span class="math inline">\(m_t, s_t\)</span></p>
+<h4 id="只有趋势项的时候">只有趋势项的时候</h4>
+<p>如果我们的模型只有趋势项，如下 <span class="math display">\[
+X_t = m_t + Y_t
+\]</span> 那么常见的用来估计趋势项的方法：</p>
+<ul>
+<li>移动平均平滑
+<ul>
+<li>等权平均</li>
+<li>指数平均</li>
+</ul></li>
+<li>过滤高频成分
+<ul>
+<li>傅立叶变换</li>
+<li>其他的谱分析方法</li>
+</ul></li>
+<li>参数化模型并拟合
+<ul>
+<li>多项式拟合</li>
+<li>机器学习，深度学习方法</li>
+</ul></li>
+</ul>
+<p>当然，我们也可以反其道而行，除了我们通过上述的方法，去获取一个预测趋势的模型，我们也可以试图消除趋势，直接获得静态序列<span class="math inline">\(Y_t\)</span>。 消除趋势最常见的方法则是： -
+差分</p>
+<blockquote>
+<p><strong>Def</strong>: Lag operator <span class="math display">\[ BX_t
+= X_{t-1} \]</span></p>
+<p><strong>Def</strong>: Difference operator <span class="math display">\[\nabla = 1 - B\]</span></p>
+</blockquote>
+<p>因此如果<span class="math inline">\(m_t\)</span>是一个<span class="math inline">\(k\)</span>阶的多项式，那么<span class="math inline">\(\nabla^k X_t\)</span> 则足以消除趋势。</p>
+<h4 id="同时有趋势项和周期项">同时有趋势项和周期项</h4>
+<p>上面介绍完了，在只有趋势项的是，我们如何去处理一个时间序列，这边我们考虑的模型更加完整一点，即趋势项和周期项同时存在。
+假设周期为<span class="math inline">\(d\)</span>,
+一般我们可以遵从下面的步骤：</p>
+<ul>
+<li>使用当前时间点附近<span class="math inline">\(d\)</span>个时间的数据做移动平均，大概估计出一个<span class="math inline">\(\hat{m}_t\)</span></li>
+<li>对于周期内的任意一个时间点<span class="math inline">\(k, 1 \le k \le
+d\)</span>, 计算<span class="math inline">\(\{x_{k+jd}-\hat{m}_{k+jd}\},
+1 \le k+jd \le n\)</span>的平均，计作<span class="math inline">\(w_t\)</span>,
+为了保证周期震荡总体围绕0点震荡，我们可以使用<span class="math inline">\(\hat{s}_t = w_t - \frac{1}{d}\sum_{k=1}^d
+w_k\)</span> 作为一个不错的周期项估计</li>
+<li>现在我们获得了<strong>去周期</strong>的数据<span class="math inline">\(d_t = x_t -\hat{s}_t\)</span>,
+问题则变成了，上面只有趋势项的问题了，我们就可以上一小段列举的方法解决这个问题了。</li>
+</ul>
+<h2 id="stationary-process">Stationary Process</h2>
+<blockquote>
+<p><strong>Def</strong>: Nonnegative definite A real-valued function
+<span class="math inline">\(\kappa\)</span> defined on integers is
+non-negative definite, if <span class="math display">\[
+\sum_{i,j}a_i \kappa(i-j) a_j \ge 0
+\]</span> for all positive integer <span class="math inline">\(i,j\)</span> and vector <span class="math inline">\(a=(a_1, a_2, \cdots)^T\)</span></p>
+</blockquote>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%EF%BC%8C%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag"># 数据分析，机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/28/port_opt/" rel="prev" title="Portfolio Optimization">
+      <i class="fa fa-chevron-left"></i> Portfolio Optimization
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#时间序列阅读笔记"><span class="nav-number">1.</span> <span class="nav-text">时间序列阅读笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.1.</span> <span class="nav-text">引言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#通用的时间序列建模方法"><span class="nav-number">1.1.1.</span> <span class="nav-text">通用的时间序列建模方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#静态模型"><span class="nav-number">1.1.2.</span> <span class="nav-text">静态模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#估计趋势和周期"><span class="nav-number">1.1.3.</span> <span class="nav-text">估计趋势和周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#只有趋势项的时候"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">只有趋势项的时候</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同时有趋势项和周期项"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">同时有趋势项和周期项</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stationary-process"><span class="nav-number">1.2.</span> <span class="nav-text">Stationary Process</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">AnsChen</p>
+  <div class="site-description" itemprop="description">Theoretical physics PhD, working on GameAI, interested at quantitative investment</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/anschen1994" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;anschen1994" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:anschen1994@gmail.com" title="E-Mail → mailto:anschen1994@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnsChen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+
+  <script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize(JSON.stringify());
+    }
+  </script>
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'forest',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+    
+
+  
+
+</body>
+</html>

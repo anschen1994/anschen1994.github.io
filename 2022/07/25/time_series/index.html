@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Time Series AnalysisThis is unfinised time series analysis note, which is wished to be done around 2023 March">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Time Series Analysis">
+<meta property="og:url" content="https://anschen1994.github.io/2022/07/25/time_series/index.html">
+<meta property="og:site_name" content="AnsChen&#39;s Home">
+<meta property="og:description" content="Time Series AnalysisThis is unfinised time series analysis note, which is wished to be done around 2023 March">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-07-25T08:21:56.000Z">
+<meta property="article:modified_time" content="2023-10-28T14:49:24.754Z">
+<meta property="article:author" content="AnsChen">
+<meta property="article:tag" content="数学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://anschen1994.github.io/2022/07/25/time_series/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Time Series Analysis | AnsChen's Home</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="AnsChen's Home" type="application/atom+xml"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">AnsChen's Home</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Welcome to AnsChen's Home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/07/25/time_series/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Time Series Analysis
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-07-25 16:21:56" itemprop="dateCreated datePublished" datetime="2022-07-25T16:21:56+08:00">2022-07-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-10-28 22:49:24" itemprop="dateModified" datetime="2023-10-28T22:49:24+08:00">2023-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Time-Series-Analysis"><a href="#Time-Series-Analysis" class="headerlink" title="Time Series Analysis"></a>Time Series Analysis</h1><p>This is unfinised time series analysis note, which is wished to be done around 2023 March<br><a id="more"></a></p>
+<h2 id="ARMA"><a href="#ARMA" class="headerlink" title="ARMA"></a>ARMA</h2><blockquote>
+<p>Definition[White Noise]<br>We call a sequence of r.v ${e_t}$ as white noise, if $\mathrm{E}[e_t]=0, \mathrm{E}[e_t^2] = \sigma^2, \mathrm{E}[e_te_s] = 0, \forall t \neq s$</p>
+<p>Definition[strictly stationary]<br>A process ${y<em>t}$ is called strictly stationary if for each $t,k,n$ $y_t, \cdots, y</em>{t+k}}$ has the same distribution as ${y<em>{t+n}, \cdots, y</em>{t+n+k}}$</p>
+<p>Definition[weakly stationary]<br>A process ${y<em>t}$ is called weakly stationary if for each $k,t$ $\mathrm{E}[y_t], \mathrm{E}[y_t^2], \mathrm{E}[y_ty</em>{t+k}]$ is independent of $t$</p>
+<p>Definition[Lag Operator]<br>Lag operator is defined as $Ly<em>t = y</em>{t-1}$</p>
+<p>Corollary</p>
+<ul>
+<li>Lag polynomial defined as $a(L;p):=\sum_{i=0}^{p}a_i L^i$ has commuted multiplication, i.e. $a(L; p)b(L; q) = b(L; q)a(L; p)$</li>
+<li>If the roots of $a(L)$ are out of unit circle, then it is invertible.</li>
+</ul>
+</blockquote>
+<p>Here, we demonstrate a simple example of the second point. For a polynomial $a(L; 1) = 1 - \lambda L $, whose root is out of unit circle when $|\lambda| &lt; 1$, its inverse can be represented as,</p>
+<script type="math/tex; mode=display">
+a^{-1}(L,1) = \sum_{i=0}^{+\infty}\lambda^i L^i</script><h3 id="Simple-Processes"><a href="#Simple-Processes" class="headerlink" title="Simple Processes"></a>Simple Processes</h3><blockquote>
+<p>Definition[<strong>AR</strong>]<br>Auto regressive process with order $p$ is defined as </p>
+<script type="math/tex; mode=display">
+a(L;p)y_t = e_t</script><p>Definition[<strong>MA</strong>]<br>Moving Averaging Process with order $q$ is defined as </p>
+<script type="math/tex; mode=display">
+y_t = b(L;q)e_t</script><p>Definition[<strong>ARMA</strong>]<br>The $(p,q)$ order of ARMA is,</p>
+<script type="math/tex; mode=display">
+a(L;q)y_t = b(L;q)e_t</script></blockquote>
+<p><strong>AR</strong> is regression, since we can expand the definition as $a<em>0 y_t = \sum</em>{i=1}^p(-a<em>i)y</em>{t-i} + e<em>t$, which is just we do regression of $y_t$ in terms of $y</em>{t-1}, \cdots, y_{t-i}$</p>
+<p>The intution of <strong>MA</strong> is more direct, that is,</p>
+<script type="math/tex; mode=display">
+y_t = \sum_{i=0}^q b_i e_{t-i}</script><p>we use weights ${b_i}$ to average another stochastic process.</p>
+<p>Hence, <strong>ARMA</strong> just tries to find a linear combination of signal sequences $y_t$ to fit the linear of combination of noise sequence $e_t$.</p>
+<blockquote>
+<p>Corollary<br>Combing with the above invertible conditions, we claim that there exists a bridge between <strong>AR</strong> and <strong>MA</strong>.</p>
+</blockquote>
+<p>For example, <strong>AR</strong>$(p)$ has an equivalent representation of <strong>MA</strong>$(\infty)$ if $a(L;p)$ is invertible. The reversed claim for <strong>MA</strong>$(q)$ and <strong>AR</strong>$(\infty)$ is also correct.</p>
+<h3 id="Covariance"><a href="#Covariance" class="headerlink" title="Covariance"></a>Covariance</h3><blockquote>
+<p>Definition[auto-covariance]<br>$\gamma<em>k := \mathrm{Cov}(y_t, y</em>{t+k})$ for weakly stationary process</p>
+<p>Definition[auto-correlation]<br>$\rho_k : = \frac{\gamma_k}{\gamma_0}$ for weakly stationary process</p>
+<p>Definition[covariance function]<br>$\tilde{\gamma}(\xi) := \sum_{i=-\infty}^{+\infty}\gamma_i \xi^i$</p>
+<p>Corollary[<strong>ARMA</strong> covariance function]<br>The covariance function of <strong>ARMA</strong> is</p>
+<script type="math/tex; mode=display">
+\tilde{\gamma}(\xi) = \frac{b(\xi)b(\xi^{-1})}{a(\xi)a(\xi^{-1})} \sigma^2</script></blockquote>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E5%AD%A6/" rel="tag"># 数学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/03/diffusion_map/" rel="prev" title="Diffusion Map Method">
+      <i class="fa fa-chevron-left"></i> Diffusion Map Method
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/11/linear_regression/" rel="next" title="线性回归漫谈">
+      线性回归漫谈 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Time-Series-Analysis"><span class="nav-number">1.</span> <span class="nav-text">Time Series Analysis</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ARMA"><span class="nav-number">1.1.</span> <span class="nav-text">ARMA</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Simple-Processes"><span class="nav-number">1.1.1.</span> <span class="nav-text">Simple Processes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Covariance"><span class="nav-number">1.1.2.</span> <span class="nav-text">Covariance</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">AnsChen</p>
+  <div class="site-description" itemprop="description">Theoretical physics PhD, working on GameAI, interested at quantitative investment</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/anschen1994" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;anschen1994" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:anschen1994@gmail.com" title="E-Mail → mailto:anschen1994@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnsChen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+
+  <script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize(JSON.stringify());
+    }
+  </script>
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'forest',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+    
+
+  
+
+</body>
+</html>

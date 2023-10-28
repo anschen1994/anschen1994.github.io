@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="摘要 在这篇blog中，我们会介绍几个trace技巧，同时介绍研究人员如何用trace来把off-policy的数据纠正来计算关于on-policy的objective。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Trace, off-policy, on-policy">
+<meta property="og:url" content="https://anschen1994.github.io/2020/06/30/trace/index.html">
+<meta property="og:site_name" content="AnsChen&#39;s Home">
+<meta property="og:description" content="摘要 在这篇blog中，我们会介绍几个trace技巧，同时介绍研究人员如何用trace来把off-policy的数据纠正来计算关于on-policy的objective。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-06-30T08:21:56.000Z">
+<meta property="article:modified_time" content="2023-10-28T15:52:39.991Z">
+<meta property="article:author" content="AnsChen">
+<meta property="article:tag" content="强化学习">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://anschen1994.github.io/2020/06/30/trace/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Trace, off-policy, on-policy | AnsChen's Home</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="AnsChen's Home" type="application/atom+xml"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">AnsChen's Home</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Welcome to AnsChen's Home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2020/06/30/trace/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Trace, off-policy, on-policy
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-06-30 16:21:56" itemprop="dateCreated datePublished" datetime="2020-06-30T16:21:56+08:00">2020-06-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-10-28 23:52:39" itemprop="dateModified" datetime="2023-10-28T23:52:39+08:00">2023-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="摘要">摘要</h2>
+<p>在这篇blog中，我们会介绍几个trace技巧，同时介绍研究人员如何用trace来把off-policy的数据纠正来计算关于on-policy的objective。
+<a id="more"></a></p>
+<h2 id="tdlambda-和-eligibility-traces-4">TD(<span class="math inline">\(\lambda\)</span>) 和 Eligibility Traces [^4]</h2>
+<!-- ### 简介 -->
+<p>众所周知，在强化学习中，我们需要估计value
+function，也就是要计算下面<span class="math inline">\(G_t\)</span>的数学期望。 <span class="math display">\[
+G_t = R_{t+1} + \gamma R_{t+2} + \cdots + \gamma^{T-t-1}R_T
+\]</span> 那么很自然的有两种流派：</p>
+<ul>
+<li>第一种就是每次完备地收集<span class="math inline">\(R_{t+1},\cdots,
+R_T\)</span>这些数据，然后不断重复，最后计算出一个sample
+mean，这就是完全的基于return的方式。因为完备地获取数据需要不断的蒙特卡罗模拟整个过程，所以也称之蒙特卡罗方法。</li>
+<li>第二种就是我们只模拟到某一步，剩下的部分用一个函数去近似，然后整个过程bootstrap。在最极端的情况下，就是只模拟一步，剩下全部用函数来近似:<span class="math inline">\(G_t=R_{t+1}+\gamma V(S_{t+1})\)</span></li>
+</ul>
+<p>当然这边我们考虑一个比较general的做法，就是模拟 <span class="math inline">\(n\)</span> 步。我们可以定义<span class="math inline">\(n\)</span>步return的概念， <span class="math display">\[
+G_t^{t+n}=R_{t+1}+\gamma R_{t+2}+\cdots+\gamma^{n-1}R_{t+n}+\gamma^n
+V(S_{t+n}) \tag{1}
+\]</span> 即所谓的中庸之道。当然因为<span class="math inline">\(n\)</span>步的return在实际操作中的花费会比较大，因为每次都需要向前模拟<span class="math inline">\(n\)</span>步。因此人们提出来了<span class="math inline">\(TD(\lambda)\)</span>。</p>
+<h3 id="tdlambda"><span class="math inline">\(TD(\lambda)\)</span></h3>
+<p>在方程.(1)的基础上，做进一步的改进，考虑一种特殊的线性结合的方式结合起来所有的<span class="math inline">\(n\)</span>步return，例如， <span class="math display">\[
+L_t(\lambda) = (1-\lambda)\sum_{n=1}^{+\infty}\lambda^{n-1}G_{t}^{t+n}
+\]</span> 对于在有限步<span class="math inline">\(T\)</span>能够结束的游戏，我们做一个截断， <span class="math display">\[
+L_t(\lambda) = (1-\lambda)\sum_{n=1}^{T-t-1}\lambda^{n-1}G_{t}^{t+n} +
+\lambda^{T-t-1}G_t.
+\]</span> 通常意义上，人们称这种定义下的return为<span class="math inline">\(\lambda\)</span>-return</p>
+<h3 id="eligibility-trace">Eligibility Trace</h3>
+<p>从<span class="math inline">\(\lambda\)</span>-return的定义，似乎比<span class="math inline">\(n\)</span>步的return更加复杂，因为我们需要模拟出所有的游戏步骤。幸运的是，聪明的研究人员证明了下面的计算方式等价于上面的定义。为了更好的表达，我们引入Eligibility
+trace通过定义其更新方式: <span class="math display">\[
+E_{t}(s) = \gamma\lambda E_{t-1}(s) + I_{s=S_t}
+\]</span> 在这些符号下，那么每步更新只需要TD error和eligibility trace，
+<span class="math display">\[
+\Delta V_t(s) = \alpha \delta_t E_t(s), \delta_t = R_{t+1} + \gamma
+V_{t}(S_{t+1}) - V_t(S_t)。
+\]</span>
+这边我们不做严格的数学证明。仅仅给出一个直觉上理解方式。让我们首先忘记强化学习这件事，考虑一个简单的case，我们想要估计一个硬币正面向上的数学期望通过不断抛硬币。假设在抛了<span class="math inline">\(n\)</span>次之后，我们的估计结果是<span class="math inline">\(p_n\)</span>，然后我们再抛一次，试图去更新估计。最trivial的方式就是，
+<span class="math display">\[p_{n+1} = (1-\lambda)p_n + \lambda
+I_{up}\]</span> 这边<span class="math inline">\(I_{up}\)</span>意味如果第<span class="math inline">\(n+1\)</span>结果是向上，那么取1，否则取0。这不是和上面的过程有某种类似？现在我们思考eligibility
+trace做了什么，那么就比较简单了。其实就对于采样到的结果有了一个click，这边就是采取的加1的方式，然后随着时间的流失，这些结果的影响加上了discount。这边需要强调的discount并不具有真正意义时间序的关系，更多的是为了满足normalization，这样可以保证估计子的consistency。</p>
+<h2 id="使用各种trace来链接off-policy和on-policy">使用各种trace来链接off-policy和on-policy</h2>
+<h3 id="summary">Summary</h3>
+<p>在这个部分，我会考虑如何使用trace的技巧来弥补off-policy和on-policy的差距。比如我们的数据是从策略<span class="math inline">\(\mu\)</span>中而来，但我们的目标是要估计<span class="math inline">\(Q^{\pi}\)</span>而非<span class="math inline">\(Q^{\mu}\)</span>,那我们需要怎么做呢。最简单的和我们之前所讨论一样使用importance
+sampling。假设我们有一个比较general的操作， <span class="math display">\[
+\mathcal{R}Q(s,a):=Q(s,a)+E_{\mu}\left[\sum_{t\ge 0}\gamma^t
+(\prod_{s=1}^tc_s)(r_t+\gamma E_{\pi}Q(s_{t+1},\cdot)-Q(s_t,a_t))\right]
+\]</span></p>
+<ul>
+<li>Importance Sampling [^3] (<span class="math inline">\(c_s=\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\)</span>)
+显然我们可以纠正off-policy，但是这种做法有个问题，就是在一般情况下，<span class="math inline">\(\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\)</span>有很高的方差，就会导致算法很不稳定。</li>
+<li>Off-policy <span class="math inline">\(Q^{\pi}(\lambda),
+Q^{*}(\lambda)\)</span> [^5] (<span class="math inline">\(c_s
+=\lambda\)</span>) 这种trace需要策略<span class="math inline">\(\mu\)</span>不是那么off-policy。量化来讲，如果<span class="math inline">\(\epsilon=\max_s\|\pi(\cdot|s)-\mu(\cdot|s)\|_1\)</span>，为了保证<span class="math inline">\(Q^{\pi}(\lambda)\)</span>收缩性质，<span class="math inline">\(\lambda &lt;
+\frac{1-\gamma}{\gamma\epsilon}\)</span>; 为了保证<span class="math inline">\(Q^{*}(\lambda)\)</span>的收缩性质，<span class="math inline">\(\lambda &lt;
+\frac{1-\gamma}{2\gamma}\)</span>。</li>
+<li>Tree-backup, TB(<span class="math inline">\(\lambda\)</span>) <span class="math inline">\((c_s=\lambda\pi(a_s|s_s))\)</span>
+这种方式可以保证任意的off-policy都能收敛，但是很明显，如果<span class="math inline">\(\mu\)</span>和<span class="math inline">\(\pi\)</span>很接近，那么效率就会很低，因为<span class="math inline">\(c_s\)</span>一直discount采样的效率，而在这种情况适合的<span class="math inline">\(c_s\)</span>应该在<span class="math inline">\(1\)</span>附近。</li>
+<li>Retrace(<span class="math inline">\(\lambda\)</span>)[^1] (<span class="math inline">\(c_s=\lambda \min\left(1,
+\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\right)\)</span>)
+这个方法就是综合了上面三个方法的特点。
+<ul>
+<li>给了trace一个bound，限制了方差</li>
+<li>on-policy的时候，没有一直discount trace</li>
+<li>off-policy的时候，限制了trace。</li>
+</ul></li>
+<li>V-trace [^2] (<span class="math inline">\(c_s=\min(\lambda,\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)})\)</span>)</li>
+</ul>
+<p>V-trace除了用了一个不同的trace，还直接把temporal
+difference做了纠正，即映射用的是， <span class="math display">\[
+\mathcal{R}Q(s,a):=Q(s,a)+E_{\mu}\left[\sum_{t\ge 0}\gamma^t
+(\prod_{s=1}^tc_s)\rho_t(r_t+\gamma
+E_{\pi}Q(s_{t+1},\cdot)-Q(s_t,a_t))\right],
+\]</span> 这边<span class="math inline">\(\rho_t\)</span>是一个被截断IS纠正，<span class="math inline">\(\rho_t=\min(\bar{\rho},\frac{\pi(a_t|s_t)}{\mu(a_t|s_t)})\)</span>并且<span class="math inline">\(\bar{\rho}\ge\lambda \ge
+1\)</span>。作者声称的一个好处是在完全on-policy的时候，V-trace可以完全复原也就是<span class="math inline">\(\rho_t=c_s=1\)</span>，但是Retrace不可以<span class="math inline">\(c_s=\lambda\)</span>。</p>
+<h3 id="数学定理">数学定理</h3>
+<p>下面是两个重要的数学定理，从理论的角度保证了这些trace技巧的可行性。[^1]</p>
+<h4 id="theorem-1">Theorem 1</h4>
+<p>The operator <span class="math inline">\(\mathcal{R}\)</span> has a
+uniqued fixed point <span class="math inline">\(Q^{\pi}\)</span>. If for
+each <span class="math inline">\(a_s\)</span> and history <span class="math inline">\(\mathcal{F}_s\)</span> we have <span class="math inline">\(c_s=c_s(a_s,\mathcal{F}_s) \in [0,
+\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}]\)</span>, then for any function <span class="math inline">\(Q\)</span>, <span class="math display">\[
+\|\mathcal{R}Q-Q^{\pi}\| \le \gamma \|Q-Q^{\pi}\|
+\]</span></p>
+<h4 id="definition">Definition</h4>
+<p>We say that a sequence of policies <span class="math inline">\(\pi\)</span> is increasingly greedy a sequence
+<span class="math inline">\(Q_k\)</span> of Q functions if the following
+property holds for all <span class="math inline">\(k\)</span>: <span class="math inline">\(P^{\pi_{k+1}}Q_{k+1} \ge
+P^{\pi_k}Q_{k+1}\)</span>, where operator <span class="math inline">\(P\)</span> is defined as, <span class="math display">\[
+P^{\pi}Q(s,a) =
+\sum_{s',a'}\pi(a'|s')p(s'|s,a)Q(s',a')
+\]</span></p>
+<h4 id="thoerem-2">Thoerem 2</h4>
+<p>Consider an arbitrary sequence of behaviour policies <span class="math inline">\(\mu_k\)</span> and a sequence of target policies
+<span class="math inline">\(\pi_k\)</span> that are increasingly greedy
+w.r.t. the sequence <span class="math inline">\(Q_k\)</span>: <span class="math display">\[
+Q_{k+1} = \mathcal{R}_k Q_k
+\]</span> where <span class="math inline">\(\mathcal{R}_k\)</span> is
+for <span class="math inline">\(\pi_k, \mu_k\)</span> and a
+<strong>Markovian</strong> <span class="math inline">\(c_s=c(a_s,s_s)\in
+[0, \frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}]\)</span>. Assume the target
+policies <span class="math inline">\(\pi_k\)</span> are <span class="math inline">\(\epsilon_k\)</span>-away from the greedy policies
+w.r.t. <span class="math inline">\(Q_k\)</span>, in the sense that <span class="math inline">\(\mathcal{T^{\pi_k}}Q_k \ge \mathcal{T}Q_k
+-\epsilon_k\|Q_k\|e\)</span>, where <span class="math inline">\(e\)</span> is the vector with <span class="math inline">\(1\)</span>-components, and <span class="math display">\[
+\mathcal{T}^{\pi}Q:=r+\gamma P^{\pi}Q, \mathcal{T}Q := r + \gamma
+\max_{\pi}P^{\pi}Q
+\]</span> Furthermore suppose <span class="math inline">\(\mathcal{T}^{\pi_0}Q_0 \ge Q_0\)</span>. Then for
+any <span class="math inline">\(k\ge0\)</span>, <span class="math display">\[
+\|Q_{k+1}-Q^{*}\| \le \gamma \|Q_k -Q^*\| + \epsilon_k \|Q_k\|
+\]</span> In consquence, if <span class="math inline">\(\epsilon_k \to
+0\)</span>, then <span class="math inline">\(Q_k \to Q^*\)</span>.</p>
+<h2 id="reference">Reference</h2>
+<p>[^1] Munos, Rémi, et al. "Safe and efficient off-policy reinforcement
+learning." Advances in Neural Information Processing Systems. 2016. [^2]
+Espeholt, Lasse, et al. "Impala: Scalable distributed deep-rl with
+importance weighted actor-learner architectures." arXiv preprint
+arXiv:1802.01561 (2018). [^3] Precup, Doina. "Eligibility traces for
+off-policy policy evaluation." Computer Science Department Faculty
+Publication Series (2000): 80. [^4] Sutton, Richard S., and Andrew G.
+Barto. Introduction to reinforcement learning. Vol. 135. Cambridge: MIT
+press, 1998. APA [^5] Harutyunyan, Anna, et al. "Q (<span class="math display">\[\lambda \]</span>) with Off-Policy Corrections."
+International Conference on Algorithmic Learning Theory. Springer, Cham,
+2016. APA</p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" rel="tag"># 强化学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/29/disoptimzer/" rel="prev" title="三个分布式RL算法">
+      <i class="fa fa-chevron-left"></i> 三个分布式RL算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/01/%E5%88%9A%E6%80%A7%E6%B3%A1%E6%B2%AB/" rel="next" title="《刚性泡沫》读书笔记">
+      《刚性泡沫》读书笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tdlambda-和-eligibility-traces-4"><span class="nav-number">2.</span> <span class="nav-text">TD(\(\lambda\)) 和 Eligibility Traces [^4]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tdlambda"><span class="nav-number">2.1.</span> <span class="nav-text">\(TD(\lambda)\)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#eligibility-trace"><span class="nav-number">2.2.</span> <span class="nav-text">Eligibility Trace</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用各种trace来链接off-policy和on-policy"><span class="nav-number">3.</span> <span class="nav-text">使用各种trace来链接off-policy和on-policy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#summary"><span class="nav-number">3.1.</span> <span class="nav-text">Summary</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数学定理"><span class="nav-number">3.2.</span> <span class="nav-text">数学定理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#theorem-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">Theorem 1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#definition"><span class="nav-number">3.2.2.</span> <span class="nav-text">Definition</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#thoerem-2"><span class="nav-number">3.2.3.</span> <span class="nav-text">Thoerem 2</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">AnsChen</p>
+  <div class="site-description" itemprop="description">Theoretical physics PhD, working on GameAI, interested at quantitative investment</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/anschen1994" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;anschen1994" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:anschen1994@gmail.com" title="E-Mail → mailto:anschen1994@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnsChen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+
+  <script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize(JSON.stringify());
+    }
+  </script>
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'forest',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+    
+
+  
+
+</body>
+</html>

@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="线性回归漫谈 线性回归是一项假设因果线性的数据拟合方法，如今也是被大家广泛使用。但是其中对应underlying的条件假设都被大家忽略了，这篇文章尝试详细整理线性回归的方方面面，方便之后回顾和参考。大部分的资料都可以在参考文献中找到。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="线性回归漫谈">
+<meta property="og:url" content="https://anschen1994.github.io/2022/09/11/linear_regression/index.html">
+<meta property="og:site_name" content="AnsChen&#39;s Home">
+<meta property="og:description" content="线性回归漫谈 线性回归是一项假设因果线性的数据拟合方法，如今也是被大家广泛使用。但是其中对应underlying的条件假设都被大家忽略了，这篇文章尝试详细整理线性回归的方方面面，方便之后回顾和参考。大部分的资料都可以在参考文献中找到。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-28T15:50:22.696Z">
+<meta property="article:author" content="AnsChen">
+<meta property="article:tag" content="数学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://anschen1994.github.io/2022/09/11/linear_regression/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>线性回归漫谈 | AnsChen's Home</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="AnsChen's Home" type="application/atom+xml"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">AnsChen's Home</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Welcome to AnsChen's Home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/09/11/linear_regression/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          线性回归漫谈
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-09-11 00:00:00" itemprop="dateCreated datePublished" datetime="2022-09-11T00:00:00+08:00">2022-09-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-10-28 23:50:22" itemprop="dateModified" datetime="2023-10-28T23:50:22+08:00">2023-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="线性回归漫谈">线性回归漫谈</h1>
+<p>线性回归是一项假设因果线性的数据拟合方法，如今也是被大家广泛使用。但是其中对应underlying的条件假设都被大家忽略了，这篇文章尝试详细整理线性回归的方方面面，方便之后回顾和参考。大部分的资料都可以在参考文献中找到。
+<a id="more"></a></p>
+<h2 id="目录">目录</h2>
+<p>[TOC] ## 假设
+首先我们将各个后续使用到的假设条件在这个<code>section</code>列举出来:
+&gt; <strong>Assumption1: Linearity</strong><span id="A1"> &gt; <span class="math display">\[
+&gt; Y = X\beta + \epsilon, Y \in \mathbb{R}^{N \times 1}, X \in
+\mathbb{R}^{N \times (K+1)}, \beta \in \mathbb{R}^{(K+1) \times 1},
+\epsilon \in \mathbb{R}^{N \times 1}
+&gt; \]</span></span></p>
+<p>这个假设是我们采取限性回归的基础，即假设因果关系符合现行表达。<span class="math inline">\(N\)</span>代表着样本数量，<span class="math inline">\(K+1\)</span>代表因变量的个数<span class="math inline">\(K\)</span>加上<span class="math inline">\(1\)</span>个<code>biasness</code>。<span class="math inline">\(\epsilon\)</span>是我们俗称的残差项，当然在金融领域，很多人也称之为特异性误差。
+&gt; <strong>Assumption2: Strict Exogenity</strong> &gt; <span class="math display">\[
+&gt; \mathbb{E}[\epsilon | X] = 0
+&gt; \]</span></p>
+<p>这假设告诉我们，<span class="math inline">\(Y\)</span>能够被<span class="math inline">\(X\)</span>的线性表示充分表达。同时这个假设也意味着,
+<span class="math display">\[
+\mathbb{E}[\epsilon] = 0, \mathbb{E}[\epsilon X] = 0,
+\mathbb{Cov}[\epsilon, X] = 0
+\]</span></p>
+<blockquote>
+<p><strong>Assumption3: Conditional Homoskedasticity</strong> <span class="math display">\[
+\mathbb{Var}[\epsilon | X] = \sigma_{\epsilon}^2 I
+\]</span></p>
+</blockquote>
+<blockquote>
+<p><strong>Assumption4: Conditionally Uncorrelated</strong> <span class="math display">\[
+\mathbb{Cov}(\epsilon_i, \epsilon_j | X) = 0, \forall i \neq j
+\]</span></p>
+</blockquote>
+<p>值得注意的是假设2-4，三个假设是非常强的假设。他们都要求在任意给定的<span class="math inline">\(X\)</span>条件下，<span class="math inline">\(\epsilon\)</span>的一阶和二阶统计量满足一些条件，这就意味着<span class="math inline">\(\epsilon\)</span>本身也需要满足这些条件，但是反之却不然。举个例子，<span class="math inline">\(\mathbb{E}[f(\epsilon)] = \mathbb{E}_X
+\left[\mathbb{E}[f(\epsilon)|X]\right]\)</span>, 当<span class="math inline">\(\mathbb{E}[f(\epsilon)|X]\)</span>是一个<span class="math inline">\(X\)</span>无关的量的时候，我们可以claim<span class="math inline">\(\mathbb{E}[f(\epsilon)]\)</span>也满足的相同的性质，但是反过来，<span class="math inline">\(\mathbb{E}[f(\epsilon)]\)</span>
+满足某个性质的时候，我们不能claim <span class="math inline">\(\mathbb{E}[f(\epsilon|X)]\)</span>
+也满足改性质</p>
+<blockquote>
+<p><strong>Assumption5: Linear Independence</strong> <span class="math display">\[
+\sum_{k=1}^K c_{k}X_{ik} = 0, \forall i=1,\cdots, N \Leftrightarrow c_k
+= 0, \forall k = 1, \cdots, K
+\]</span></p>
+</blockquote>
+<p>该假设则保证模型选取的因变量是线性独立的，即我们没有选取“重复”的因变量。该假设也保证了线性回归模型在数学上的可求解性，因为它意味着，
+<span class="math display">\[
+rank(X) = k + 1, \\
+\det{X^T X} \neq 0
+\]</span></p>
+<blockquote>
+<p><strong>Assumption6: Gaussional Res</strong> <span class="math display">\[
+\epsilon | X \sim \mathcal{N}(0, \sigma_\epsilon^2 I)
+\]</span></p>
+</blockquote>
+<p>残差符合高斯分布这个假设则是更加强于假设2-4，我相信有一部分人会认为该假设是线性回归的underlying的假设。我们后续回揭晓这个假设其实对于线性回归没有任何的作用。</p>
+<p><em>下面我们详细讨论这些假设在线性回归模型的应用，并且试图慢慢抹去其中的一些，然后来看看其带来的影响，以及新的求解方法</em></p>
+<h2 id="ols">OLS</h2>
+<h3 id="estimator">Estimator</h3>
+<p>假设我们需要的解决的问题满足<strong>Assumption 1-5</strong>。
+<strong>Assumption2-4</strong> 告诉我们可以选取<span class="math inline">\(\mathcal{L}_{OLS}:=\mathbb{E}[\epsilon^T
+\epsilon]\)</span> 作为优化的目标函数是合适，即我们需要解决下面的问题:
+<span class="math display">\[
+\min_{\beta} \mathcal{L}_{OLS} = \min_{\beta}\mathbb{E}\left[Y^TY
+-Y^TX\beta - \beta^T X^TY + \beta^T X^TXY\right]
+\]</span> 我们可以发现<span class="math inline">\(\frac{\partial
+\mathcal{L}_{OLS}}{\partial \beta} = -2X^T + 2X^TX\beta\)</span>, 因此，
+&gt; <strong>OLS estimator</strong> &gt; <span class="math display">\[
+&gt; \hat{\beta} = (X^TX)^{-1} X^T Y
+&gt; \]</span></p>
+<p>回顾之前的Assumption，我们会发现<strong>Assumption5</strong>在这个时候保证了可解性。
+说到了这边，我们是时候引入线性回归中一个最重要的(个人观点)的定理:
+<strong>Gauss-Markov Theorem</strong></p>
+<blockquote>
+<p><strong>Theorem: Gauss-Markov</strong>
+在<strong>Assumption1-5</strong>都成立的条件下，OLS
+estimator构成一个<strong>consistent BLUE</strong>(Best Linear Unbiased
+Estimator).</p>
+</blockquote>
+<p>我们在附录里，大概展开了其证明的一些关键。</p>
+<h3 id="衡量ols">衡量OLS</h3>
+<p>上面的讨论，都是在比较的理想的情况下，最优的estimator应该长成OLS这个样子。但是在实际中，我们获取的数据终究和理想会有一些偏差，那么这个应该方法来衡量OLS在这些情况下的表现。</p>
+<h4 id="hypothesis-testing">Hypothesis Testing</h4>
+<p>检验OLS所获得得<span class="math inline">\(\hat{\beta}\)</span>的优劣，最简单的方式就是假说检验了。这个时候我们就需要利用到<strong>Assumption6</strong>,
+即 <span class="math display">\[\hat{\beta}|X \sim \mathcal{N}(\beta,
+\sigma^2(X^TX)^{-1})\]</span> 既然<span class="math inline">\(\hat{\beta}|X\)</span>服从高斯分布，那么就经典的t-检验(单因子分析)或者F-检验(多因子分析)来做假说检验。</p>
+<h5 id="单因子">单因子</h5>
+<p>如果<span class="math inline">\(\hat{\beta}\)</span>只有一维，那么可以直接使用t-检验，检验<span class="math inline">\(\hat{\beta}\)</span>本身。当然这个时候，我们需要估计的<span class="math inline">\(\hat{\sigma}\)</span>去代替<span class="math inline">\(\sigma\)</span>。这样<span class="math inline">\(t:=\frac{\hat{\beta}-\beta}{\hat{\sigma}{(X^TX)^{-\frac{1}{2}}}}\)</span>
+服从t-分布。而这边<span class="math inline">\(\hat{\sigma}^2\)</span>则是对于<span class="math inline">\(\mathbb{Var}[\epsilon]\)</span>的估计，我们可以采用最简单的方法来估计，
+<span class="math display">\[
+\hat{\sigma}^2 = \frac{1}{N-(k+1)}\sum_{i=1}^N (Y_i - X_i \hat{\beta})^2
+\]</span> 这边<span class="math inline">\(N-(k+1)\)</span>则是<code>Bessel correction</code>。
+有了这些，我们可以将完整的假说检验描述成： &gt; <strong>Single
+Factor</strong> &gt; <span class="math display">\[
+&gt; H_0: \hat{\beta} = \beta_0 \\
+&gt; H_1:\hat{\beta} \neq \beta_0
+&gt; \]</span> &gt; &gt; If <span class="math inline">\(t &lt;
+t_{\frac{\alpha}{2}}\)</span> or <span class="math inline">\(t &gt;
+t_{1-\frac{\alpha}{2}}\)</span>, We can reject <span class="math inline">\(H_0\)</span>, where <span class="math inline">\(\alpha\)</span> is tolerance.</p>
+<h5 id="多因子">多因子</h5>
+<h4 id="r-square">R-square</h4>
+<blockquote>
+<p><strong>R-square</strong> <span class="math display">\[
+R^2 := \frac{\mathrm{ESS}}{\mathrm{TSS}} = \frac{\sum_{i=1}^N (\hat{Y}_i
+- \bar{Y})^2}{\sum_{i=1}^N (Y_i-\bar{Y})^2} = 1 -
+\frac{\mathrm{RSS}}{\mathrm{TSS}} = 1 - \frac{\sum_{i=1}^N
+\hat{\epsilon}_i^2}{\sum_{i=1}^N (Y_i-\bar{Y})^2}
+\]</span> R-square is also called <strong>coefficient of
+determination</strong>.</p>
+</blockquote>
+<p>从上面这个表达式，我们可以从几何的角度大概理解了一下，<span class="math inline">\(R^2\)</span>是衡量个什么。首先，我们可以看到<span class="math inline">\(\hat{\epsilon}\)</span>表达的意思，就是<span class="math inline">\(N\)</span>维空间里的一个点<span class="math inline">\(Y\)</span>到<span class="math inline">\(\{X_{:,0},X_{:,1},X_{:,2},\cdots,
+X_{:,K}\}\)</span>构成的空间最近的欧式距离。那么很明显，我们可以得到关于<span class="math inline">\(R^2\)</span>的几个结论: - <span class="math inline">\(R^2\)</span>随着<span class="math inline">\(K\)</span>的增大而增大 - <span class="math inline">\(K\ge
+N-1\)</span>，并且在满足<strong>Assumption5</strong>的时候，<span class="math inline">\(R^2=1\)</span> 因此，在使用<span class="math inline">\(R^2\)</span>去评价一个因子对目标的贡献的时候，永远都会得到一个非负的结果，而这个结果可能是由于过拟合导致的，并不是该因子一定做出来真正意义上的贡献了。</p>
+<p>为了解决上面的这个问题，有人提出了一个调整后的<span class="math inline">\(R^2\)</span>，称之为<span class="math inline">\(R_{adj}^2\)</span> &gt; <strong>Adjusted
+R-square</strong> &gt; <span class="math display">\[
+R_{adj}^2 := 1 - \frac{\mathrm{RSS}/(N-K-1)}{\mathrm{TSS}/(N-1)}= 1 -
+(1-R^2)\frac{N-1}{N-K-1}
+&gt; \]</span></p>
+<p>这边其实借鉴了F-test的思想。<span class="math inline">\(\mathrm{RSS}\)</span>其实有<span class="math inline">\(N-(K+1)\)</span>个“随机自由度”(<span class="math inline">\(K+1\)</span>个维度被<span class="math inline">\(X\)</span>所解释了)。<span class="math inline">\(\mathrm{TSS}\)</span>有<span class="math inline">\(N-1\)</span>个“随机自由度”(<span class="math inline">\(\bar{Y}\)</span>约束了其中一个维度)。</p>
+<p>最后我们考虑一下<span class="math inline">\(R^2,R^2_{adj}\)</span>等于0的情况，那就是我们不采取任何其他的因子去解释<span class="math inline">\(Y\)</span>，永远就用样本的平均<span class="math inline">\(\bar{Y}\)</span>去作为<span class="math inline">\(Y\)</span>的估计值，这个时候，<span class="math inline">\(\mathrm{RSS}=\mathrm{TSS},K=1\)</span>。</p>
+<h4 id="aic-bic">AIC &amp;&amp; BIC</h4>
+<p><span class="math inline">\(R^2_{adj}\)</span>对于<span class="math inline">\(R^2\)</span>的调整，就是期望我们在最小化<span class="math inline">\(\mathrm{RSS}\)</span>的过程中，对于因子的个数有一定的惩罚。这个和现在机器学习里正则化的思想我认为也是大同小异。那么<span class="math inline">\(\mathrm{AIC}\)</span>和<span class="math inline">\(\mathrm{BIC}\)</span>两种<code>information criterion</code>则是将这个约束变得更加有数学意义点。
+&gt; <strong>AIC and BIC</strong> &gt; <span class="math display">\[
+&gt; \mathrm{AIC} = N + N\log2\pi + N \log \frac{\mathrm{RSS}}{N} +
+2(K+1), \\
+&gt; \mathrm{BIC} = N + N\log 2\pi + N \log \frac{\mathrm{RSS}}{N} +
+(K+1)\log N
+&gt; \]</span></p>
+<h4 id="out-of-sample-rmse">Out-of-Sample RMSE</h4>
+<p>最后这种，则是目前机器学习中，相对主流的方法，对于一个回归问题，使用样本外的均方差来评价模型的好坏。</p>
+<h2 id="rls">RLS</h2>
+<p>在考虑完简单的OLS之后，我们考虑一个跟实际更加接近的模型，即在现实生活中，我们真实的<span class="math inline">\(\beta\)</span>往往不是可以在空间里任意选择，而是仅仅只会位于某些更加低维的空间里面，即我们需要解决下面的问题,
+<span class="math display">\[
+Y = X\beta + \epsilon, \\
+L\beta = r, L \in \mathbb{R}^{M\times {K=1}}, r \in \mathbb{R}^{M\times
+1}
+\]</span> 当然这边<span class="math inline">\(M &lt;
+K+1\)</span>,否则就没有自由度供我们去优化<span class="math inline">\(\hat{\beta}\)</span>了。
+对于RLS的解，我们借助拉格朗日方法可以求解得到，细节见附录 &gt;
+<strong>RLS estimator</strong> &gt; <span class="math display">\[
+&gt; \hat{\beta}^{RLS} = \hat{\beta}^{OLS}-
+(X^TX)^{-1}L^T\left(L(X^TX)^{-1}L^T\right)^{-1}(L\hat{\beta}^{OLS}-r)
+&gt; \]</span></p>
+<h3 id="衡量rls">衡量RLS</h3>
+<p>通过对构造出来的优化问题的求解，我们得到了<span class="math inline">\(\hat{\beta}^{RLS}\)</span>，那么我也需要去从各个方面去评价其的好坏。
+首先就是，我们需要证明的<span class="math inline">\(\hat{\beta}^{RLS}\)</span>需要满足给定的限制条件<span class="math inline">\(L\hat{\beta}^{RLS} =
+r\)</span>，这点从其表达可以直接看出来。 再之，我们可以检查一下<span class="math inline">\(\hat{\beta}^{RLS}\)</span>作为一个估计算子，是否是无偏的并且一致的。对于偏置，我们计算一下期望<span class="math inline">\(\mathbb{E}[\hat{\beta}^{RLS}]\)</span>. 因为<span class="math inline">\(\mathbb{E}[\hat{\beta}^{OLS}] =
+\beta\)</span>(Assumption2), 我们很容易得出来，<span class="math inline">\(\hat{\beta}^{RLS}\)</span>也是一个无偏估计。对于一致性，因为<span class="math inline">\(\mathbb{Var}[\hat{\beta}^{OLS}] = \sigma^2
+(X^TX)^{-1}\)</span>, 当<span class="math inline">\(N\to\infty\)</span>,
+<span class="math inline">\(\mathbb{Var}[\hat{\beta}^{OLS}] \to
+0\)</span>, 也就是<span class="math inline">\(\hat{\beta}^{OLS} \to
+\beta\)</span>, 那么我们也很容易发现<span class="math inline">\(\hat{\beta}^{RLS} \to
+\beta\)</span>。总结一下,</p>
+<p>那么<span class="math inline">\(\hat{\beta}^{RLS}\)</span>的效率如何呢，在对<span class="math inline">\(\beta\)</span>有限制的前提下，<span class="math inline">\(\hat{\beta}^{RLS}\)</span>会不会比<span class="math inline">\(\hat{\beta}^{OLS}\)</span>估计更加的高效呢，那么只需要两个估计算的协方差<span class="math inline">\(\mathbb{Var}[\hat{\beta}^{RLS}]\)</span>和<span class="math inline">\(\mathbb{Var}[\hat{\beta}^{OLS}]\)</span>,
+通过一些简单的计算，我们可以发现, <span class="math display">\[
+\mathbb{Var}[\hat{\beta}^{OLS}] - \mathbb{Var}[\hat{\beta}^{RLS}] =
+\sigma^2(X^TX)^{-1}L^T\left(L(X^TX)^{-1}L^T\right)^{-1}L(X^TX)^{-1} \ge
+0
+\]</span></p>
+<blockquote>
+<p><strong>RLS Summary</strong> If the restrictions are correct, <span class="math inline">\(L\beta = r\)</span>, and all assumptions satisfies
+then: - <span class="math inline">\(\hat{\beta}^{RLS}\)</span> is
+unbiased - <span class="math inline">\(\hat{\beta}^{RLS}\)</span> is
+more efficient than <span class="math inline">\(\hat{\beta}^{OLS}\)</span> - <span class="math inline">\(\hat{\beta}^{RLS}\)</span> is BLUE <span class="math inline">\(\hat{\beta}^{RLS}\)</span> is consistent <span class="math inline">\(\hat{\beta}^{RLS}\)</span> is asymptotically
+normally distributed: <span class="math display">\[
+\hat{\beta}^{RLS} \sim \mathcal{N}\left(\beta,
+\sigma^2D(X^TX)^{-1}\right),
+\]</span> where <span class="math inline">\(D=I-(X^TX)^{-1}L^T\left(L(X^TX)^{-1}L^T\right)^{-1}L\)</span></p>
+<p>If the restrictions are wrong, <span class="math inline">\(L\beta =
+r\)</span>, then: <span class="math inline">\(\hat{\beta}^{RLS}\)</span>
+is biased(no longer BLUE) <span class="math inline">\(\hat{\beta}^{RLS}\)</span> is remains more
+efficient than <span class="math inline">\(\hat{\beta}^{OLS}\)</span>
+<span class="math inline">\(\hat{\beta}^{RLS}\)</span> is
+inconsistent</p>
+</blockquote>
+<p>这边我们需要说明的，<span class="math inline">\(\hat{\beta}^{RLS}\)</span>的方差一直比<span class="math inline">\(\hat{\beta}^{OLS}\)</span>要小，无论限制条件是否满足，但是这并不影响<span class="math inline">\(\hat{\beta}^{OLS}\)</span>是<code>BLUE</code>在没有限制条件的下，因为一旦限制条件被破坏，<span class="math inline">\(\hat{\beta}^{RLS}\)</span>虽然效率更加高，但是它不再是一个无偏的估计算子了。</p>
+<p>既然先验的条件，对于一个估计算子来说是异常之重要，那么我们可以采用传统的假说检验，来帮助我们验证先验的正确性。
+<span class="math display">\[
+H_0: L\beta = r, H_1 : L\beta \neq r
+\]</span> 采用F-test去做假说检验的话，只需要计算， <span class="math display">\[
+F := \frac{(\mathrm{RSS}_R -
+\mathrm{RSS}_{UR})/M}{\mathrm{RSS}_{UR}/(N-(k+1))}
+\]</span></p>
+<h2 id="共线性">共线性</h2>
+<p>上面两个问题，无论是OLS还是RLS，要想求解都离不开<strong>Assumption5</strong>，也就是说我们需要<span class="math inline">\((X^TX)\)</span>这个矩阵是可逆的，或者就是我们给出因子之间不要存在线性关联。但是在实际建模中，尤其是面对可解释性没有那么强的因子时，这个条件往往不成立，或者说我们很难准确地判断这个条件是不是成立。因此在实际中使用的时候，因此数据或多或少存在一些噪声，求解器往往不会直接抛出<span class="math inline">\((X^TX)\)</span>不可逆的错误，但是我们并不能忽略共线性带来的影响。</p>
+<p>我们很容想到的问题就有：</p>
+<ul>
+<li>估计算子的方差<span class="math inline">\(\sigma^2(X^TX)^{-1}\)</span>会很大，很不稳定</li>
+<li>在做预测的时候，因子的微笑变化，甚至该变化是来源自噪声，也可能导致<span class="math inline">\(Y\)</span>的巨大差异</li>
+<li><span class="math inline">\(R^2\)</span>远超预期的大，（这点我觉得因素太多，未必是共线性导致的）</li>
+<li>过拟合，因为共线性的因子包含的信息其实就是那么多，但是因子个数却在增加，因此很容易造成过拟合，这点和<span class="math inline">\(R^2\)</span>超预期也是类似</li>
+</ul>
+<p>那么如何去检验我们因子中是否存在严重的共线性，则是在做线性回归的时候，一个前置问题。
+一般可能会有两种方法</p>
+<h3 id="variance-inflation-factorvif">Variance Inflation
+Factor(VIF)</h3>
+<p>VIF的想法则是十分简单的，如果被检测的因子<span class="math inline">\(X_{:,j}\)</span>是一个连续变量，那么我们直接用剩余的因子对其做一个线性回归，并且计算其对应的<span class="math inline">\(R^2_j\)</span>, 如果<span class="math inline">\(R_j^2\)</span>过大，则认为该因子和其他因子存在比较严重的共线性。
+<span class="math display">\[
+X_{:,j} = \sum_{k\neq j}X_{:,k}\alpha_k + e_j
+\]</span>
+当然这边为了和之后定义的<code>GVIF</code>有个对应的关系，一般检测的是下面这个值
+&gt; <strong>VIF</strong> &gt; <span class="math display">\[
+&gt; \mathrm{VIF}_j := \frac{1}{1-R_j^2}
+&gt; \]</span></p>
+<h3 id="generalized-variance-inflation-factorgvif">Generalized Variance
+Inflation Factor(GVIF)</h3>
+<p>VIF要求我们构建出一个线性回归问题，但是在有些时候线性回归问题并不是可以构造的，例如被检测因子和其他因子存在多项式关系，或者被检测因子是一个类别性质的因子。那么这个时候我们需要将被检测的因子归入到一个集合内，比如，
+- 多项因子：<span class="math inline">\(\mathcal{F}=(x_1, x_1^2, x_1^3,
+\cdots)\)</span> - 类别哑变量：<span class="math inline">\(\mathcal{F}=(1_{x\in C_1}, 1_{x\in C_2},
+\cdots)\)</span></p>
+<p>这个时候我们的因子被分成两个集合<span class="math inline">\(\mathcal{F}, \mathcal{F}_C\)</span>,
+那么我们可以计算他们的correlation matrix。 &gt; <strong>GVIF</strong>
+&gt; <span class="math display">\[
+&gt; \mathrm{GVIF} := \frac{\det \mathbb{Cov}(\mathcal{F}) \det
+\mathbb{Cov}(\mathcal{F}_C)}{\det \mathbb{Cov}(\mathcal{F} \cup
+\mathcal{F}_C)}
+&gt; \]</span></p>
+<h3 id="处理共线性">处理共线性</h3>
+<p>处理共线性的方法：</p>
+<ul>
+<li>警惕<em>哑变量陷阱</em>，即当你对类别因子采用哑变量的时候，如果这个时候还有一个偏置项，那么偏置和哑变量则必然构成共线性。</li>
+<li>通过上述检测方法，剔除共线性强烈的因子，但是如果目标不是做因子检测，而是单纯的想去预测<span class="math inline">\(Y\)</span>,剔除并不是一个很好的方法，因为我们会丢失对<span class="math inline">\(Y\)</span>的信息。这个时候，最好的方法去寻找规避过拟合的方法</li>
+<li>防止过拟合
+<ul>
+<li>增加正则项</li>
+<li>获取更多的数据，缓解过拟合和共线性带来的影响</li>
+<li>有限bound的因子，选择合适的normarlize技术</li>
+</ul></li>
+</ul>
+<h2 id="gls">GLS</h2>
+<p>在共线性部分，我们考虑了relax <strong>Assumption
+5</strong>的各个方面。那么在<code>GLS</code>这个部分，我们考虑的是relax
+<strong>Assumption 3-4</strong>。<strong>Assumption3-4</strong>
+要求的是对于随机变量<span class="math inline">\(\epsilon\)</span>,
+它们之间的协方差矩阵是一个正比于单位矩阵的量，也是保证各个error之间是相互无关而且各向同性。那么当然，这边抹除这个假设，则是我们认为协方差可以写成一个通用的形式，
+<span class="math display">\[
+\mathbb{Cov}(\epsilon, \epsilon) = \sigma^2 \Omega
+\]</span> 这边<span class="math inline">\(\Omega\)</span>是一个半正定矩阵。</p>
+<h3 id="ols表现">OLS表现</h3>
+<p>我们可以先看一下<span class="math inline">\(\hat{\beta}^{OLS}\)</span>在这个场景下面的表现。首先因为<strong>Assumption2</strong>的成立，因此<span class="math inline">\(\hat{\beta}^{OLS}\)</span>依然是无偏的，而且很容易计算，
+<span class="math display">\[
+\mathbb{Cov}(\hat{\beta}^{OLS}, \hat{\beta}^{OLS}) = \sigma^2
+(X^TX)^{-1}X^T\Omega T (X^TX)^{-1} \neq \sigma^2 (X^TX)^{-1}
+\]</span> 从上面的表示，我们依然可以看到<span class="math inline">\(N\to\infty, \mathbb{Cov}(\hat{\beta}^{OLS},
+\hat{\beta}^{OLS}) \to 0\)</span>, 因此，在这种情况下面， <strong><span class="math inline">\(\hat{\beta}^{OLS}\)</span>
+仍然是一个无偏并且一致的估计算子</strong></p>
+<p>但是我们上面的统计推断的很多方法在这边都不再使用了，因为在没有关联并且各向同性的误差假设，我们采用了<span class="math inline">\(\hat{\epsilon}^T
+\hat{\epsilon}\)</span>来估计<span class="math inline">\(\hat{\sigma}^2\)</span>，那么显然在这边<span class="math inline">\(\hat{\epsilon}^T
+\hat{\epsilon}=\frac{1}{N-(K+1)}((Y-X\hat{\beta}^{OLS})^T(Y-X\hat{\beta}^{OLS}))\)</span>是一个有偏并且不一致的估计了。</p>
+<h3 id="通用的估计算子">通用的估计算子</h3>
+<p>基本线性代数方法，告诉我们对于相关的随机变量的协方差矩阵，要对这些随机变量进行解耦，最简单的方法就是使用正交矩阵直接对角化这个协方差矩阵。然后为了保证各个方向的各向同性，我们再在新的坐标系下进行一些简单的伸缩变换就可以了。综合上面两步，我们可以找到一个三角矩阵<span class="math inline">\(U\)</span>，满足 <span class="math display">\[
+\Omega^{-1} = UU^T
+\]</span>
+那么很容易我们可以将通过下面的变换<code>GLS</code>转化成<code>OLS</code>
+<span class="math display">\[
+\tilde{Y} = \tilde{X} \beta + \tilde{\epsilon}, \tilde{Y}:=U^TY,
+\tilde{X}:=U^TX, \tilde{\epsilon}:=U^T \epsilon
+\]</span> 因此 &gt; <strong>GLS Estimator</strong> &gt; <span class="math display">\[
+&gt; \hat{\beta}^{GLS} = (X^TUU^TX)^{-1}X^TUU^TY =
+(X^T\Omega^{-1}X)^{-1}X^T\Omega^{-1}Y
+&gt; \]</span></p>
+<h3 id="summary">Summary</h3>
+<p>通过<span class="math inline">\(U\)</span>变换之后，<code>OLS</code>的那些分析都可以拓展到<code>GLS</code>中来，这边只是总结一下最终的结果，具体可自行根据上面的内容推导.</p>
+<blockquote>
+<p><strong>GLS Summary</strong> - The error variance <span class="math display">\[\hat{\sigma}^2=\frac{1}{N-(K+1)}(\tilde{Y}-\tilde{X}\hat{\beta}^{GLS})^T(\tilde{Y}-\tilde{X}\hat{\beta}^{GLS})
+\\ =
+\frac{1}{N-(K+1)}((Y-X\hat{\beta}^{GLS})^T)\Omega^{-1}(Y-X\hat{\beta}^{GLS})\]</span>
+<span class="math inline">\(\hat{\sigma}^2\)</span>是对<span class="math inline">\(\sigma^2\)</span>的一个无偏，一致的估计。 - <span class="math inline">\(\hat{\beta}^{GLS}\)</span> 是一个无偏的估计, <span class="math inline">\(\mathbb{E}[\hat{\beta}^{GLS}] = \beta\)</span> -
+协方差矩阵为<span class="math inline">\(\mathbb{Cov}(\hat{\beta}^{GLS},
+\hat{\beta}^{GLS}) = \sigma^2(X^T\Omega^{-1}X)^{-1}\)</span> -
+如果<strong>Assumption5</strong>成立，那么<span class="math inline">\(\hat{\beta}^{GLS} | X \sim \mathcal{N}(\beta,
+\sigma^2(X^T\Omega^{-1}X)^{-1})\)</span> - <span class="math inline">\(\hat{\beta}^{GLS}\)</span> is BLUE</p>
+</blockquote>
+<h3 id="现实与理想">现实与理想</h3>
+<p>我们可以发现上面的所有关系，从线性变换开始，都隐含假设了我们知道了<span class="math inline">\(\Omega\)</span>这个矩阵。当然在现实中，我们有的情况是知道<span class="math inline">\(\Omega\)</span>的，比如Barra纯因子模型中，假设了波动和股票市值的平方根成正比，从而认为的构造出了一个<span class="math inline">\(\Omega\)</span>。但是在绝大部分数学分析的工作中，<span class="math inline">\(\Omega\)</span>都是未知的。因此如何去构造一个<span class="math inline">\(\Omega\)</span>的估计<span class="math inline">\(\hat{\Omega}\)</span>才是整个建模的关键。 <!-- 
+在这节我们同时打破了假设**Assumption3**和**Assumption4**直接造成了现实与理想如此巨大的鸿沟。接下来两节，我们将摒弃这季度追求普适性的做法，分别分析在打破这两个假设其中之一的情况。
+
+
+## 各向同性
+在这节中，**Assumption3**被打破，**Assumption4**仍然成立。 --></p>
+<h2 id="附录">附录</h2>
+<h3 id="gauss-markov-theorem">Gauss-Markov Theorem</h3>
+<p>任何一个线性的estimator <span class="math inline">\(\tilde{\beta} = M
+Y\)</span>, 我们需要证明的 <span class="math inline">\(\hat{\beta}\)</span>在所有的<span class="math inline">\(\tilde{\beta}\)</span>中拥有最小的估计方差，以及其能保证一致性。
+对于一致性来说，我们需要证明<span class="math inline">\(\mathbb{E}[\hat{\beta}]=\beta\)</span>. <span class="math display">\[
+\mathbb{E}[\hat{\beta}] = \mathbb{E}_X\left[\beta |X +
+(X^TX)^{-1}X^T\mathbb{E}[\epsilon | X]\right] = \beta
+\]</span> 当然从上面的式子，我们也可以看出来 <span class="math display">\[
+\mathbb{E}[\hat{\beta}|X] = \beta
+\]</span> 这边我们只用到了<strong>Assumption2</strong></p>
+<p>下面我们开始证明，OLS具有最小的条件协方差矩阵，即 <span class="math inline">\(\mathbb{Cov}(\hat{\beta}, \hat{\beta} | X) \le
+\mathbb{Cov}(\tilde{\beta}, \tilde{\beta} | X)\)</span>. 令<span class="math inline">\(M = D + (X^TX)^{-1}X^T\)</span>,
+我们很容易计算出来， <span class="math display">\[
+\mathbb{Cov}(\tilde{\beta}, \tilde{\beta} | X ) = DYY^TD^T +
+\mathbb{Cov}{(\hat{\beta}, \hat{\beta} | X)}
+\]</span> QED</p>
+<h3 id="rls问题">RLS问题</h3>
+<p>对于RLS的拉格朗日量可以写成， <span class="math display">\[
+\mathcal{L}(\beta, \lambda) = (Y-X\beta)^T(Y-X\beta) + 2\lambda^T(L\beta
+-r)
+\]</span> 其对应的导数为 <span class="math display">\[
+\frac{\partial \mathcal{L}}{\partial \beta} = -2X^TY + 2X^TX\beta +
+2L^T\lambda = 0 \\
+\frac{\partial \mathcal{L}}{\partial \lambda} = 2L\beta - 2r = 0
+\]</span> 那么<span class="math inline">\(\beta,
+\lambda\)</span>则是下面线性方程组的解, <span class="math display">\[
+\left(\begin{array}{cc}X^TX &amp; L^T \\ L &amp; 0\end{array}\right)
+\left(\begin{array}{c}\beta \\ \lambda\end{array}\right) =
+\left(\begin{array}{c}X^TY \\ r\end{array}\right)
+\]</span> 通过求逆，我们很容易得到 $$ ^{RLS} = ^{OLS}-
+(X<sup>TX)</sup>{-1}L<sup>T(L(X</sup>TX)<sup>{-1}L</sup>T)<sup>{-1}(L</sup>{OLS}-r),
+\ = (L(X<sup>TX)</sup>{-1}L<sup>T)</sup>{-1}(L^{OLS} - r) $</p>
+<h2 id="参考文献">参考文献</h2>
+<ol type="1">
+<li>Book, Element of statistical learning</li>
+<li>https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1601414</li>
+<li>http://web.vu.lt/mif/a.buteikis/wp-content/uploads/PE_Book/</li>
+</ol>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E5%AD%A6/" rel="tag"># 数学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/25/time_series/" rel="prev" title="Time Series Analysis">
+      <i class="fa fa-chevron-left"></i> Time Series Analysis
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/01/01/prepare_env/" rel="next" title="linux/mac工作环境配置">
+      linux/mac工作环境配置 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#线性回归漫谈"><span class="nav-number">1.</span> <span class="nav-text">线性回归漫谈</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#目录"><span class="nav-number">1.1.</span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ols"><span class="nav-number">1.2.</span> <span class="nav-text">OLS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#estimator"><span class="nav-number">1.2.1.</span> <span class="nav-text">Estimator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#衡量ols"><span class="nav-number">1.2.2.</span> <span class="nav-text">衡量OLS</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#hypothesis-testing"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">Hypothesis Testing</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#单因子"><span class="nav-number">1.2.2.1.1.</span> <span class="nav-text">单因子</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#多因子"><span class="nav-number">1.2.2.1.2.</span> <span class="nav-text">多因子</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#r-square"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">R-square</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#aic-bic"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">AIC &amp;&amp; BIC</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#out-of-sample-rmse"><span class="nav-number">1.2.2.4.</span> <span class="nav-text">Out-of-Sample RMSE</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rls"><span class="nav-number">1.3.</span> <span class="nav-text">RLS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#衡量rls"><span class="nav-number">1.3.1.</span> <span class="nav-text">衡量RLS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#共线性"><span class="nav-number">1.4.</span> <span class="nav-text">共线性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#variance-inflation-factorvif"><span class="nav-number">1.4.1.</span> <span class="nav-text">Variance Inflation
+Factor(VIF)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#generalized-variance-inflation-factorgvif"><span class="nav-number">1.4.2.</span> <span class="nav-text">Generalized Variance
+Inflation Factor(GVIF)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#处理共线性"><span class="nav-number">1.4.3.</span> <span class="nav-text">处理共线性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gls"><span class="nav-number">1.5.</span> <span class="nav-text">GLS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ols表现"><span class="nav-number">1.5.1.</span> <span class="nav-text">OLS表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通用的估计算子"><span class="nav-number">1.5.2.</span> <span class="nav-text">通用的估计算子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#summary"><span class="nav-number">1.5.3.</span> <span class="nav-text">Summary</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#现实与理想"><span class="nav-number">1.5.4.</span> <span class="nav-text">现实与理想</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">1.6.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#gauss-markov-theorem"><span class="nav-number">1.6.1.</span> <span class="nav-text">Gauss-Markov Theorem</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rls问题"><span class="nav-number">1.6.2.</span> <span class="nav-text">RLS问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">1.7.</span> <span class="nav-text">参考文献</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">AnsChen</p>
+  <div class="site-description" itemprop="description">Theoretical physics PhD, working on GameAI, interested at quantitative investment</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/anschen1994" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;anschen1994" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:anschen1994@gmail.com" title="E-Mail → mailto:anschen1994@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnsChen</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+
+  <script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize(JSON.stringify());
+    }
+  </script>
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'forest',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+    
+
+  
+
+</body>
+</html>
