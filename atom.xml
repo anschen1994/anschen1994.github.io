@@ -6,7 +6,7 @@
   <link href="https://anschen1994.github.io/atom.xml" rel="self"/>
   
   <link href="https://anschen1994.github.io/"/>
-  <updated>2023-10-28T15:49:34.880Z</updated>
+  <updated>2024-06-10T05:03:29.860Z</updated>
   <id>https://anschen1994.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Position Based Dynamics</title>
+    <link href="https://anschen1994.github.io/2024/06/01/pbd/"/>
+    <id>https://anschen1994.github.io/2024/06/01/pbd/</id>
+    <published>2024-05-31T16:00:00.000Z</published>
+    <updated>2024-06-10T05:03:29.860Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html"></summary>
+        
+      
+    
+    
+    
+    <category term="物理模拟" scheme="https://anschen1994.github.io/categories/%E7%89%A9%E7%90%86%E6%A8%A1%E6%8B%9F/"/>
+    
+    
+    <category term="物理模拟" scheme="https://anschen1994.github.io/tags/%E7%89%A9%E7%90%86%E6%A8%A1%E6%8B%9F/"/>
+    
+  </entry>
   
   <entry>
     <title>时间序列阅读笔记</title>
@@ -107,25 +132,6 @@
     
     
     <category term="强化学习" scheme="https://anschen1994.github.io/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>linux/mac工作环境配置</title>
-    <link href="https://anschen1994.github.io/2023/01/01/prepare_env/"/>
-    <id>https://anschen1994.github.io/2023/01/01/prepare_env/</id>
-    <published>2022-12-31T16:00:00.000Z</published>
-    <updated>2023-10-28T15:34:19.986Z</updated>
-    
-    
-    <summary type="html">&lt;h1 id=&quot;Prepare-Work-Env-for-Linux&quot;&gt;&lt;a href=&quot;#Prepare-Work-Env-for-Linux&quot; class=&quot;headerlink&quot; title=&quot;Prepare Work Env for Linux&quot;&gt;&lt;/a&gt;Prepare Work Env for Linux&lt;/h1&gt;&lt;p&gt;Prepare your work environment for linux system&lt;br&gt;&lt;/p&gt;</summary>
-    
-    
-    
-    <category term="CS工程" scheme="https://anschen1994.github.io/categories/CS%E5%B7%A5%E7%A8%8B/"/>
-    
-    
-    <category term="软件" scheme="https://anschen1994.github.io/tags/%E8%BD%AF%E4%BB%B6/"/>
     
   </entry>
   
