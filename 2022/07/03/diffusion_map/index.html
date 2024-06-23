@@ -32,7 +32,7 @@
 <meta property="og:image" content="https://anschen1994.github.io/2022/07/03/diffusion_map/prl1.png">
 <meta property="og:image" content="https://anschen1994.github.io/2022/07/03/diffusion_map/prl2.png">
 <meta property="article:published_time" content="2022-07-02T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-06-23T11:42:45.241Z">
+<meta property="article:modified_time" content="2024-06-23T11:49:02.449Z">
 <meta property="article:author" content="AnsChen">
 <meta property="article:tag" content="量子物理，机器学习">
 <meta name="twitter:card" content="summary">
@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-06-23 19:42:45" itemprop="dateModified" datetime="2024-06-23T19:42:45+08:00">2024-06-23</time>
+                <time title="Modified: 2024-06-23 19:49:02" itemprop="dateModified" datetime="2024-06-23T19:49:02+08:00">2024-06-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -270,8 +270,10 @@ analysis)莫属。当然<code>PCA</code>是一个线性算法。这可以从几�
 <p>当然<code>MDS</code>采用了欧式距离来建模这种“关系”，这也是这个方法的局限，毕竟欧式距离做为线性结构的度量是不错的，但是如果数据之间的关系是非线性的，那么欧式距离只是在邻域内看作是一个相对有效的表达。</p>
 <h4 id="dmm">DMM</h4>
 <p>那么在我们不知道数据的几何结构的时候（如果知道，只需要拟合即可，问题就会简单了），我们如果才能如何有效地表达出<span class="math inline">\(d_X,
-d_Y\)</span>呢。<code>DMM</code>提出了一个核心想法： &gt;
-通过扩散过程，衔接局部性质和全局性质</p>
+d_Y\)</span>呢。<code>DMM</code>提出了一个核心想法：</p>
+<blockquote>
+<p>通过扩散过程，衔接局部性质和全局性质</p>
+</blockquote>
 <p>这种想法在物理研究其实很常见：</p>
 <ul>
 <li>牛顿力学或是量子力学都是通过建立微分方程(局部)，然后积分求解，得到一些宏观的可观测量(全局)</li>

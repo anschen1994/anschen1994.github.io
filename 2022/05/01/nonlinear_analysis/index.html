@@ -28,7 +28,7 @@
 <meta property="og:description" content="非线性因果分析技术 在基础的统计学中，我们学过用协方差矩阵来表征两个高维随机变量\(X&#x3D;(X_1,X_2,\cdots,X_n)^T, Y&#x3D;(Y_1,Y_2,\cdots, Y_m)^T\)之间的相关性。但是，我们知道相关性并不意味着独立性，更加不能准确描述因果性。这篇Blog，我们将持续更新一些因果性分析工具。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-04-30T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-10-28T15:50:43.183Z">
+<meta property="article:modified_time" content="2024-06-23T11:52:18.478Z">
 <meta property="article:author" content="AnsChen">
 <meta property="article:tag" content="机器学习">
 <meta name="twitter:card" content="summary">
@@ -193,7 +193,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-10-28 23:50:43" itemprop="dateModified" datetime="2023-10-28T23:50:43+08:00">2023-10-28</time>
+                <time title="Modified: 2024-06-23 19:52:18" itemprop="dateModified" datetime="2024-06-23T19:52:18+08:00">2024-06-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -254,10 +254,12 @@ H(Y|X) = H(X,Y) - H(X)
 T(X \to Y) = H(Y_{t+1}|Y^t, Z^t) - H(Y_{t+1}|Y^t, X^t, Z^t)
 \]</span></p>
 </blockquote>
-<p>当然有人为了保证对称性，也会采用下面的定义来表示信息的净流出， &gt;
-信息净流出 &gt; <span class="math display">\[
-&gt; \tilde{T}(X \to Y) = T(X \to Y) - T(Y \to X)
-&gt; \]</span></p>
+<p>当然有人为了保证对称性，也会采用下面的定义来表示信息的净流出，</p>
+<blockquote>
+<p>信息净流出 <span class="math display">\[
+\tilde{T}(X \to Y) = T(X \to Y) - T(Y \to X)
+\]</span></p>
+</blockquote>
 <h2 id="附录">附录</h2>
 <h3 id="g-causality和转移熵的等价性">G-causality和转移熵的等价性</h3>
 <p>有一个非常有意思的结果，就是在假设<span class="math inline">\(X_t,Y_t\)</span>均服从多元高斯分布的条件下面。在2009年的一篇<a href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.103.238701" target="_blank" rel="noopener"><strong>PRL</strong></a>证明了G-causality和转移熵的等价性。这就是建立数学拟合和信息论之间的一些桥梁，也建立了实操(G-causality更加好实现)和理论(转移熵实现更为麻烦，要从数据去得到分布不是那么得容易)的关系。</p>

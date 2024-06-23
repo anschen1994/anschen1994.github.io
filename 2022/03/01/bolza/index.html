@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://anschen1994.github.io/2022/03/01/bolza/leg.png">
 <meta property="article:published_time" content="2022-02-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-06-23T11:44:02.326Z">
+<meta property="article:modified_time" content="2024-06-23T11:47:54.671Z">
 <meta property="article:author" content="AnsChen">
 <meta property="article:tag" content="量子物理，机器学习">
 <meta name="twitter:card" content="summary">
@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-06-23 19:44:02" itemprop="dateModified" datetime="2024-06-23T19:44:02+08:00">2024-06-23</time>
+                <time title="Modified: 2024-06-23 19:47:54" itemprop="dateModified" datetime="2024-06-23T19:47:54+08:00">2024-06-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -268,15 +268,21 @@ A = U - TS
 笔者，当初在学习热力学的时候，对于<span class="math inline">\((T,S),
 (P,V)\)</span>这两组共轭变量，也是只是认为量纲互补，也是最近才理解了这边共轭的来源，惭愧...</p>
 <h3 id="数学">数学</h3>
-<p>数学上对于Legendre变换的定义如下： &gt; 定义 &gt; 如果函数<span class="math inline">\(f(x): R^d \to R\)</span>
-在我们所关心的区域内是可导的，函数<span class="math inline">\(f(x)\)</span>对应的Legendre变换定义为 &gt; <span class="math display">\[ f^*(p) = p^T x - f(x) |_{\frac{d(px-f(x))}{dx} =
-0} \]</span> 从图上我们可以看到Legendre变换的几何意义: <img src="/2022/03/01/bolza/leg.png" class="" title="This is an image">
-从这定义，我们可以看出来，加入<span class="math inline">\(f(x)\)</span>一个满足超线性$ _{|x|} =
-$的凸函数，那么这个定义等价于 <span class="math display">\[
+<p>数学上对于Legendre变换的定义如下：</p>
+<blockquote>
+<p>定义 如果函数<span class="math inline">\(f(x): R^d \to R\)</span>
+在我们所关心的区域内是可导的，函数<span class="math inline">\(f(x)\)</span>对应的Legendre变换定义为 <span class="math display">\[ f^*(p) = p^T x - f(x) |_{\frac{d(px-f(x))}{dx} =
+0} \]</span></p>
+</blockquote>
+<p>从图上我们可以看到Legendre变换的几何意义: <img src="/2022/03/01/bolza/leg.png" class="" title="This is an image">
+从这定义，我们可以看出来，加入<span class="math inline">\(f(x)\)</span>一个满足超线性<span class="math inline">\(\lim_{|x|\to\infty}\frac{|f(x)|}{|x|} =
+\infty\)</span>的凸函数，那么这个定义等价于 <span class="math display">\[
 f^*(p) = \sup_{x} p^T x - f(x)
 \]</span> 对着演示的这幅图，我们可以想象，比如<span class="math inline">\(x\)</span>越来越大的时候，<span class="math inline">\(f(x)\)</span>增加越来越快，对应的切线变陡峭的速率也越来越快，<span class="math inline">\(f^*\)</span>
-增加得也越来越快。因此，我们可以claim，数学证明也是很简单的，在这边就不赘述了。
-&gt; 性质 &gt; <span class="math inline">\(f^*\)</span>也是一个凸函数</p>
+增加得也越来越快。因此，我们可以claim，数学证明也是很简单的，在这边就不赘述了。</p>
+<blockquote>
+<p>性质 <span class="math inline">\(f^*\)</span>也是一个凸函数</p>
+</blockquote>
 <p>对比上面两种物理，尤其是理论力学中的结构，我们可以任何一个拉格朗日量，对应的哈密顿量也会继承其的凹凸性，这点是非常重要有意思的，有兴趣的读者可以脑子里想象一下简单的弹簧系统。</p>
 <!-- 那么对于那些不可导的凸函数，我们可以定义一个```subgradient```来代替提督
 > 定义

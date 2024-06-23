@@ -28,7 +28,7 @@
 <meta property="og:description" content="线性回归漫谈 线性回归是一项假设因果线性的数据拟合方法，如今也是被大家广泛使用。但是其中对应underlying的条件假设都被大家忽略了，这篇文章尝试详细整理线性回归的方方面面，方便之后回顾和参考。大部分的资料都可以在参考文献中找到。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-09-10T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-10-28T15:50:22.696Z">
+<meta property="article:modified_time" content="2024-06-23T11:51:36.173Z">
 <meta property="article:author" content="AnsChen">
 <meta property="article:tag" content="数学">
 <meta name="twitter:card" content="summary">
@@ -193,7 +193,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-10-28 23:50:22" itemprop="dateModified" datetime="2023-10-28T23:50:22+08:00">2023-10-28</time>
+                <time title="Modified: 2024-06-23 19:51:36" itemprop="dateModified" datetime="2024-06-23T19:51:36+08:00">2024-06-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -221,16 +221,20 @@
 <a id="more"></a></p>
 <h2 id="目录">目录</h2>
 <p>[TOC] ## 假设
-首先我们将各个后续使用到的假设条件在这个<code>section</code>列举出来:
-&gt; <strong>Assumption1: Linearity</strong><span id="A1"> &gt; <span class="math display">\[
-&gt; Y = X\beta + \epsilon, Y \in \mathbb{R}^{N \times 1}, X \in
+首先我们将各个后续使用到的假设条件在这个<code>section</code>列举出来:</p>
+<blockquote>
+<p><strong>Assumption1: Linearity</strong><span id="A1"> <span class="math display">\[
+Y = X\beta + \epsilon, Y \in \mathbb{R}^{N \times 1}, X \in
 \mathbb{R}^{N \times (K+1)}, \beta \in \mathbb{R}^{(K+1) \times 1},
 \epsilon \in \mathbb{R}^{N \times 1}
-&gt; \]</span></span></p>
-<p>这个假设是我们采取限性回归的基础，即假设因果关系符合现行表达。<span class="math inline">\(N\)</span>代表着样本数量，<span class="math inline">\(K+1\)</span>代表因变量的个数<span class="math inline">\(K\)</span>加上<span class="math inline">\(1\)</span>个<code>biasness</code>。<span class="math inline">\(\epsilon\)</span>是我们俗称的残差项，当然在金融领域，很多人也称之为特异性误差。
-&gt; <strong>Assumption2: Strict Exogenity</strong> &gt; <span class="math display">\[
-&gt; \mathbb{E}[\epsilon | X] = 0
-&gt; \]</span></p>
+\]</span></span></p>
+</blockquote>
+<p>这个假设是我们采取限性回归的基础，即假设因果关系符合现行表达。<span class="math inline">\(N\)</span>代表着样本数量，<span class="math inline">\(K+1\)</span>代表因变量的个数<span class="math inline">\(K\)</span>加上<span class="math inline">\(1\)</span>个<code>biasness</code>。<span class="math inline">\(\epsilon\)</span>是我们俗称的残差项，当然在金融领域，很多人也称之为特异性误差。</p>
+<blockquote>
+<p><strong>Assumption2: Strict Exogenity</strong> <span class="math display">\[
+\mathbb{E}[\epsilon | X] = 0
+\]</span></p>
+</blockquote>
 <p>这假设告诉我们，<span class="math inline">\(Y\)</span>能够被<span class="math inline">\(X\)</span>的线性表示充分表达。同时这个假设也意味着,
 <span class="math display">\[
 \mathbb{E}[\epsilon] = 0, \mathbb{E}[\epsilon X] = 0,
@@ -277,10 +281,13 @@ rank(X) = k + 1, \\
 \min_{\beta} \mathcal{L}_{OLS} = \min_{\beta}\mathbb{E}\left[Y^TY
 -Y^TX\beta - \beta^T X^TY + \beta^T X^TXY\right]
 \]</span> 我们可以发现<span class="math inline">\(\frac{\partial
-\mathcal{L}_{OLS}}{\partial \beta} = -2X^T + 2X^TX\beta\)</span>, 因此，
-&gt; <strong>OLS estimator</strong> &gt; <span class="math display">\[
-&gt; \hat{\beta} = (X^TX)^{-1} X^T Y
-&gt; \]</span></p>
+\mathcal{L}_{OLS}}{\partial \beta} = -2X^T + 2X^TX\beta\)</span>,
+因此，</p>
+<blockquote>
+<p><strong>OLS estimator</strong> <span class="math display">\[
+\hat{\beta} = (X^TX)^{-1} X^T Y
+\]</span></p>
+</blockquote>
 <p>回顾之前的Assumption，我们会发现<strong>Assumption5</strong>在这个时候保证了可解性。
 说到了这边，我们是时候引入线性回归中一个最重要的(个人观点)的定理:
 <strong>Gauss-Markov Theorem</strong></p>
@@ -303,13 +310,16 @@ Estimator).</p>
 <span class="math display">\[
 \hat{\sigma}^2 = \frac{1}{N-(k+1)}\sum_{i=1}^N (Y_i - X_i \hat{\beta})^2
 \]</span> 这边<span class="math inline">\(N-(k+1)\)</span>则是<code>Bessel correction</code>。
-有了这些，我们可以将完整的假说检验描述成： &gt; <strong>Single
-Factor</strong> &gt; <span class="math display">\[
-&gt; H_0: \hat{\beta} = \beta_0 \\
-&gt; H_1:\hat{\beta} \neq \beta_0
-&gt; \]</span> &gt; &gt; If <span class="math inline">\(t &lt;
-t_{\frac{\alpha}{2}}\)</span> or <span class="math inline">\(t &gt;
-t_{1-\frac{\alpha}{2}}\)</span>, We can reject <span class="math inline">\(H_0\)</span>, where <span class="math inline">\(\alpha\)</span> is tolerance.</p>
+有了这些，我们可以将完整的假说检验描述成：</p>
+<blockquote>
+<p><strong>Single Factor</strong> <span class="math display">\[
+H_0: \hat{\beta} = \beta_0 \\
+H_1:\hat{\beta} \neq \beta_0
+\]</span></p>
+<p>If <span class="math inline">\(t &lt; t_{\frac{\alpha}{2}}\)</span>
+or <span class="math inline">\(t &gt; t_{1-\frac{\alpha}{2}}\)</span>,
+We can reject <span class="math inline">\(H_0\)</span>, where <span class="math inline">\(\alpha\)</span> is tolerance.</p>
+</blockquote>
 <h5 id="多因子">多因子</h5>
 <h4 id="r-square">R-square</h4>
 <blockquote>
@@ -332,13 +342,15 @@ R_{adj}^2 := 1 - \frac{\mathrm{RSS}/(N-K-1)}{\mathrm{TSS}/(N-1)}= 1 -
 <p>这边其实借鉴了F-test的思想。<span class="math inline">\(\mathrm{RSS}\)</span>其实有<span class="math inline">\(N-(K+1)\)</span>个“随机自由度”(<span class="math inline">\(K+1\)</span>个维度被<span class="math inline">\(X\)</span>所解释了)。<span class="math inline">\(\mathrm{TSS}\)</span>有<span class="math inline">\(N-1\)</span>个“随机自由度”(<span class="math inline">\(\bar{Y}\)</span>约束了其中一个维度)。</p>
 <p>最后我们考虑一下<span class="math inline">\(R^2,R^2_{adj}\)</span>等于0的情况，那就是我们不采取任何其他的因子去解释<span class="math inline">\(Y\)</span>，永远就用样本的平均<span class="math inline">\(\bar{Y}\)</span>去作为<span class="math inline">\(Y\)</span>的估计值，这个时候，<span class="math inline">\(\mathrm{RSS}=\mathrm{TSS},K=1\)</span>。</p>
 <h4 id="aic-bic">AIC &amp;&amp; BIC</h4>
-<p><span class="math inline">\(R^2_{adj}\)</span>对于<span class="math inline">\(R^2\)</span>的调整，就是期望我们在最小化<span class="math inline">\(\mathrm{RSS}\)</span>的过程中，对于因子的个数有一定的惩罚。这个和现在机器学习里正则化的思想我认为也是大同小异。那么<span class="math inline">\(\mathrm{AIC}\)</span>和<span class="math inline">\(\mathrm{BIC}\)</span>两种<code>information criterion</code>则是将这个约束变得更加有数学意义点。
-&gt; <strong>AIC and BIC</strong> &gt; <span class="math display">\[
-&gt; \mathrm{AIC} = N + N\log2\pi + N \log \frac{\mathrm{RSS}}{N} +
-2(K+1), \\
-&gt; \mathrm{BIC} = N + N\log 2\pi + N \log \frac{\mathrm{RSS}}{N} +
+<p><span class="math inline">\(R^2_{adj}\)</span>对于<span class="math inline">\(R^2\)</span>的调整，就是期望我们在最小化<span class="math inline">\(\mathrm{RSS}\)</span>的过程中，对于因子的个数有一定的惩罚。这个和现在机器学习里正则化的思想我认为也是大同小异。那么<span class="math inline">\(\mathrm{AIC}\)</span>和<span class="math inline">\(\mathrm{BIC}\)</span>两种<code>information criterion</code>则是将这个约束变得更加有数学意义点。</p>
+<blockquote>
+<p><strong>AIC and BIC</strong> <span class="math display">\[
+\mathrm{AIC} = N + N\log2\pi + N \log \frac{\mathrm{RSS}}{N} + 2(K+1),
+\\
+\mathrm{BIC} = N + N\log 2\pi + N \log \frac{\mathrm{RSS}}{N} +
 (K+1)\log N
-&gt; \]</span></p>
+\]</span></p>
+</blockquote>
 <h4 id="out-of-sample-rmse">Out-of-Sample RMSE</h4>
 <p>最后这种，则是目前机器学习中，相对主流的方法，对于一个回归问题，使用样本外的均方差来评价模型的好坏。</p>
 <h2 id="rls">RLS</h2>
@@ -349,11 +361,13 @@ L\beta = r, L \in \mathbb{R}^{M\times {K=1}}, r \in \mathbb{R}^{M\times
 1}
 \]</span> 当然这边<span class="math inline">\(M &lt;
 K+1\)</span>,否则就没有自由度供我们去优化<span class="math inline">\(\hat{\beta}\)</span>了。
-对于RLS的解，我们借助拉格朗日方法可以求解得到，细节见附录 &gt;
-<strong>RLS estimator</strong> &gt; <span class="math display">\[
-&gt; \hat{\beta}^{RLS} = \hat{\beta}^{OLS}-
+对于RLS的解，我们借助拉格朗日方法可以求解得到，细节见附录</p>
+<blockquote>
+<p><strong>RLS estimator</strong> <span class="math display">\[
+\hat{\beta}^{RLS} = \hat{\beta}^{OLS}-
 (X^TX)^{-1}L^T\left(L(X^TX)^{-1}L^T\right)^{-1}(L\hat{\beta}^{OLS}-r)
-&gt; \]</span></p>
+\]</span></p>
+</blockquote>
 <h3 id="衡量rls">衡量RLS</h3>
 <p>通过对构造出来的优化问题的求解，我们得到了<span class="math inline">\(\hat{\beta}^{RLS}\)</span>，那么我也需要去从各个方面去评价其的好坏。
 首先就是，我们需要证明的<span class="math inline">\(\hat{\beta}^{RLS}\)</span>需要满足给定的限制条件<span class="math inline">\(L\hat{\beta}^{RLS} =
@@ -411,10 +425,12 @@ Factor(VIF)</h3>
 <span class="math display">\[
 X_{:,j} = \sum_{k\neq j}X_{:,k}\alpha_k + e_j
 \]</span>
-当然这边为了和之后定义的<code>GVIF</code>有个对应的关系，一般检测的是下面这个值
-&gt; <strong>VIF</strong> &gt; <span class="math display">\[
-&gt; \mathrm{VIF}_j := \frac{1}{1-R_j^2}
-&gt; \]</span></p>
+当然这边为了和之后定义的<code>GVIF</code>有个对应的关系，一般检测的是下面这个值</p>
+<blockquote>
+<p><strong>VIF</strong> <span class="math display">\[
+\mathrm{VIF}_j := \frac{1}{1-R_j^2}
+\]</span></p>
+</blockquote>
 <h3 id="generalized-variance-inflation-factorgvif">Generalized Variance
 Inflation Factor(GVIF)</h3>
 <p>VIF要求我们构建出一个线性回归问题，但是在有些时候线性回归问题并不是可以构造的，例如被检测因子和其他因子存在多项式关系，或者被检测因子是一个类别性质的因子。那么这个时候我们需要将被检测的因子归入到一个集合内，比如，
@@ -422,12 +438,14 @@ Inflation Factor(GVIF)</h3>
 \cdots)\)</span> - 类别哑变量：<span class="math inline">\(\mathcal{F}=(1_{x\in C_1}, 1_{x\in C_2},
 \cdots)\)</span></p>
 <p>这个时候我们的因子被分成两个集合<span class="math inline">\(\mathcal{F}, \mathcal{F}_C\)</span>,
-那么我们可以计算他们的correlation matrix。 &gt; <strong>GVIF</strong>
-&gt; <span class="math display">\[
-&gt; \mathrm{GVIF} := \frac{\det \mathbb{Cov}(\mathcal{F}) \det
+那么我们可以计算他们的correlation matrix。</p>
+<blockquote>
+<p><strong>GVIF</strong> <span class="math display">\[
+\mathrm{GVIF} := \frac{\det \mathbb{Cov}(\mathcal{F}) \det
 \mathbb{Cov}(\mathcal{F}_C)}{\det \mathbb{Cov}(\mathcal{F} \cup
 \mathcal{F}_C)}
-&gt; \]</span></p>
+\]</span></p>
+</blockquote>
 <h3 id="处理共线性">处理共线性</h3>
 <p>处理共线性的方法：</p>
 <ul>
@@ -468,10 +486,13 @@ Inflation Factor(GVIF)</h3>
 <span class="math display">\[
 \tilde{Y} = \tilde{X} \beta + \tilde{\epsilon}, \tilde{Y}:=U^TY,
 \tilde{X}:=U^TX, \tilde{\epsilon}:=U^T \epsilon
-\]</span> 因此 &gt; <strong>GLS Estimator</strong> &gt; <span class="math display">\[
-&gt; \hat{\beta}^{GLS} = (X^TUU^TX)^{-1}X^TUU^TY =
+\]</span> 因此</p>
+<blockquote>
+<p><strong>GLS Estimator</strong> <span class="math display">\[
+\hat{\beta}^{GLS} = (X^TUU^TX)^{-1}X^TUU^TY =
 (X^T\Omega^{-1}X)^{-1}X^T\Omega^{-1}Y
-&gt; \]</span></p>
+\]</span></p>
+</blockquote>
 <h3 id="summary">Summary</h3>
 <p>通过<span class="math inline">\(U\)</span>变换之后，<code>OLS</code>的那些分析都可以拓展到<code>GLS</code>中来，这边只是总结一下最终的结果，具体可自行根据上面的内容推导.</p>
 <blockquote>
@@ -485,12 +506,13 @@ Inflation Factor(GVIF)</h3>
 \sigma^2(X^T\Omega^{-1}X)^{-1})\)</span> - <span class="math inline">\(\hat{\beta}^{GLS}\)</span> is BLUE</p>
 </blockquote>
 <h3 id="现实与理想">现实与理想</h3>
-<p>我们可以发现上面的所有关系，从线性变换开始，都隐含假设了我们知道了<span class="math inline">\(\Omega\)</span>这个矩阵。当然在现实中，我们有的情况是知道<span class="math inline">\(\Omega\)</span>的，比如Barra纯因子模型中，假设了波动和股票市值的平方根成正比，从而认为的构造出了一个<span class="math inline">\(\Omega\)</span>。但是在绝大部分数学分析的工作中，<span class="math inline">\(\Omega\)</span>都是未知的。因此如何去构造一个<span class="math inline">\(\Omega\)</span>的估计<span class="math inline">\(\hat{\Omega}\)</span>才是整个建模的关键。 <!-- 
+<p>我们可以发现上面的所有关系，从线性变换开始，都隐含假设了我们知道了<span class="math inline">\(\Omega\)</span>这个矩阵。当然在现实中，我们有的情况是知道<span class="math inline">\(\Omega\)</span>的，比如Barra纯因子模型中，假设了波动和股票市值的平方根成正比，从而认为的构造出了一个<span class="math inline">\(\Omega\)</span>。但是在绝大部分数学分析的工作中，<span class="math inline">\(\Omega\)</span>都是未知的。因此如何去构造一个<span class="math inline">\(\Omega\)</span>的估计<span class="math inline">\(\hat{\Omega}\)</span>才是整个建模的关键。</p>
+<!-- 
 在这节我们同时打破了假设**Assumption3**和**Assumption4**直接造成了现实与理想如此巨大的鸿沟。接下来两节，我们将摒弃这季度追求普适性的做法，分别分析在打破这两个假设其中之一的情况。
 
 
 ## 各向同性
-在这节中，**Assumption3**被打破，**Assumption4**仍然成立。 --></p>
+在这节中，**Assumption3**被打破，**Assumption4**仍然成立。 -->
 <h2 id="附录">附录</h2>
 <h3 id="gauss-markov-theorem">Gauss-Markov Theorem</h3>
 <p>任何一个线性的estimator <span class="math inline">\(\tilde{\beta} = M
@@ -520,9 +542,13 @@ Y\)</span>, 我们需要证明的 <span class="math inline">\(\hat{\beta}\)</spa
 \left(\begin{array}{cc}X^TX &amp; L^T \\ L &amp; 0\end{array}\right)
 \left(\begin{array}{c}\beta \\ \lambda\end{array}\right) =
 \left(\begin{array}{c}X^TY \\ r\end{array}\right)
-\]</span> 通过求逆，我们很容易得到 $$ ^{RLS} = ^{OLS}-
-(X<sup>TX)</sup>{-1}L<sup>T(L(X</sup>TX)<sup>{-1}L</sup>T)<sup>{-1}(L</sup>{OLS}-r),
-\ = (L(X<sup>TX)</sup>{-1}L<sup>T)</sup>{-1}(L^{OLS} - r) $</p>
+\]</span> 通过求逆，我们很容易得到 <span class="math display">\[
+\hat{\beta}^{RLS} = \hat{\beta}^{OLS}-
+(X^TX)^{-1}L^T\left(L(X^TX)^{-1}L^T\right)^{-1}(L\hat{\beta}^{OLS}-r),
+\\
+\lambda = \left(L(X^TX)^{-1}L^T\right)^{-1}\left(L\hat{\beta}^{OLS} -
+r\right)
+\]</span></p>
 <h2 id="参考文献">参考文献</h2>
 <ol type="1">
 <li>Book, Element of statistical learning</li>
