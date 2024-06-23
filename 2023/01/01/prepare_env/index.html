@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Prepare Work Env for LinuxPrepare your work environment for linux system">
+  <meta name="description" content="Prepare Work Env for Linux Prepare your work environment for linux system">
 <meta property="og:type" content="article">
 <meta property="og:title" content="linux&#x2F;mac工作环境配置">
 <meta property="og:url" content="https://anschen1994.github.io/2023/01/01/prepare_env/index.html">
 <meta property="og:site_name" content="AnsChen&#39;s Home">
-<meta property="og:description" content="Prepare Work Env for LinuxPrepare your work environment for linux system">
+<meta property="og:description" content="Prepare Work Env for Linux Prepare your work environment for linux system">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-12-31T16:00:00.000Z">
 <meta property="article:modified_time" content="2023-10-28T15:34:19.986Z">
@@ -216,120 +216,132 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Prepare-Work-Env-for-Linux"><a href="#Prepare-Work-Env-for-Linux" class="headerlink" title="Prepare Work Env for Linux"></a>Prepare Work Env for Linux</h1><p>Prepare your work environment for linux system<br><a id="more"></a></p>
-<h2 id="Software-install"><a href="#Software-install" class="headerlink" title="Software install"></a>Software install</h2><h3 id="git"><a href="#git" class="headerlink" title="git"></a>git</h3><p>Use git with ssh style:</p>
+        <h1 id="prepare-work-env-for-linux">Prepare Work Env for Linux</h1>
+<p>Prepare your work environment for linux system <a id="more"></a> ##
+Software install</p>
+<h3 id="git">git</h3>
+<p>Use git with ssh style: - generate private and public key:
+</p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh &amp;&amp; ssh-keygen -o</span><br></pre></td></tr></tbody></table></figure><p></p>
+<pre><code>- now github only support sha-2, we could use the following code to generate ```ssh-keygen -t ecdsa -b 521 -C "your_email"```</code></pre>
 <ul>
-<li><p>generate private and public key:</p>
-  <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh &amp;&amp; ssh-keygen -o</span><br></pre></td></tr></tbody></table></figure>
-<ul>
-<li>now github only support sha-2, we could use the following code to generate <code>ssh-keygen -t ecdsa -b 521 -C "your_email"</code></li>
-</ul>
-</li>
-<li>check whether it does generate <em>id_rsa</em> and <em>id_rsa.pub</em></li>
+<li>check whether it does generate <em>id_rsa</em> and
+<em>id_rsa.pub</em></li>
 <li>copy your <em>id_rsa.pub</em> to your git account setting</li>
 </ul>
-<p><strong><em>Note</em></strong><br>If you use <code>git clone</code> timeouts, you can use <code>ssh -vT git_url</code> to check port or other information</p>
-<h3 id="zsh"><a href="#zsh" class="headerlink" title="zsh"></a>zsh</h3><p>install oh my zsh</p>
-<ul>
-<li>install zsh <code>yum install zsh</code></li>
-<li>change shell to zsh <code>chsh -s /bin/zsh</code></li>
-<li>install oh-my-zsh </li>
-</ul>
+<p><strong><em>Note</em></strong> If you use <code>git clone</code>
+timeouts, you can use <code>ssh -vT git_url</code> to check port or
+other information</p>
+<h3 id="zsh">zsh</h3>
+<p>install oh my zsh - install zsh <code>yum install zsh</code> - change
+shell to zsh <code>chsh -s /bin/zsh</code> - install oh-my-zsh</p>
 <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"</span><br></pre></td></tr></tbody></table></figure>
-<h3 id="gcc"><a href="#gcc" class="headerlink" title="gcc"></a>gcc</h3><p>update gcc version</p>
-<h4 id="centos-under-7-6"><a href="#centos-under-7-6" class="headerlink" title="centos under 7.6"></a>centos under 7.6</h4><ul>
-<li><p>install <code>yum install centos-release-scl</code></p>
-</li>
-<li><p>find gcc related <code>yum list dev\*gcc</code></p>
-</li>
-<li><p>install gcc related <code>yum install devtoolset-x-gcc devtoolset-x-gcc-c++</code></p>
-</li>
-<li><p>valid temporarily <code>source /opt/rh/devtoolset-x/enable</code></p>
-</li>
-<li><p>check <code>gcc -v</code> and <code>g++ -v</code></p>
-</li>
-<li><p>valid permanently add <code>source /opt/rh/devtoolset-x-gcc-c++</code> to your bashrc or zshrc</p>
-</li>
-</ul>
-<h4 id="cento-beyond-7-6"><a href="#cento-beyond-7-6" class="headerlink" title="cento beyond 7.6"></a>cento beyond 7.6</h4><p>Note that <code>devtools-x-gcc</code> has been renamed as <code>gcc-toolset-x</code></p>
+<h3 id="gcc">gcc</h3>
+<p>update gcc version #### centos under 7.6</p>
 <ul>
-<li><p>check <code>yum list | grep gcc-toolset</code></p>
-</li>
-<li><p>use dnf to install <code>dnf install gcc-toolset-x</code></p>
-</li>
-<li><p>source to activate <code>source /opt/rh/gcc-toolset-x/enable</code></p>
-</li>
+<li><p>install <code>yum install centos-release-scl</code></p></li>
+<li><p>find gcc related <code>yum list dev\*gcc</code></p></li>
+<li><p>install gcc related
+<code>yum install devtoolset-x-gcc devtoolset-x-gcc-c++</code></p></li>
+<li><p>valid temporarily
+<code>source /opt/rh/devtoolset-x/enable</code></p></li>
+<li><p>check <code>gcc -v</code> and <code>g++ -v</code></p></li>
+<li><p>valid permanently add
+<code>source /opt/rh/devtoolset-x-gcc-c++</code> to your bashrc or
+zshrc</p></li>
 </ul>
-<h3 id="conda"><a href="#conda" class="headerlink" title="conda"></a>conda</h3><p>follow the instruction <a href="https://docs.anaconda.com/anaconda/install/linux/" target="_blank" rel="noopener">Install Conda Linux</a></p>
-<h3 id="go"><a href="#go" class="headerlink" title="go"></a>go</h3><p>install golang</p>
+<h4 id="cento-beyond-7.6">cento beyond 7.6</h4>
+<p>Note that <code>devtools-x-gcc</code> has been renamed as
+<code>gcc-toolset-x</code> - check
+<code>yum list | grep gcc-toolset</code></p>
 <ul>
-<li>download <code>wget https://go.dev/dl/go1.18.3.linux-amd64.tar.gz</code></li>
-<li>remove the oldest go<ul>
-<li>use <code>which go</code> to find the current go</li>
-<li>remove <code>rm -rf $cur_go_dir</code> such as <code>rm -rf /usr/local/go</code></li>
+<li><p>use dnf to install
+<code>dnf install gcc-toolset-x</code></p></li>
+<li><p>source to activate
+<code>source /opt/rh/gcc-toolset-x/enable</code></p></li>
 </ul>
-</li>
-<li>decompress <code>tar -C /usr/local -xzf go1.18.3.linux-amd64.tar.gz</code></li>
-<li>env variable <code>export PATH=$PATH:/usr/loca/go/bin</code>, add to zshrc make permanently</li>
-<li>remove source file <code>rm go1.18.3.linux-amd64.tar.gz</code></li>
-</ul>
-<h3 id="protobuf"><a href="#protobuf" class="headerlink" title="protobuf"></a>protobuf</h3><ul>
-<li>download the particular version   <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget  https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-cpp-3.7.1.tar.gz</span><br></pre></td></tr></tbody></table></figure></li>
+<h3 id="conda">conda</h3>
+<p>follow the instruction <a href="https://docs.anaconda.com/anaconda/install/linux/" target="_blank" rel="noopener">Install Conda
+Linux</a></p>
+<h3 id="go">go</h3>
+<p>install golang - download
+<code>wget https://go.dev/dl/go1.18.3.linux-amd64.tar.gz</code> - remove
+the oldest go - use <code>which go</code> to find the current go -
+remove <code>rm -rf $cur_go_dir</code> such as
+<code>rm -rf /usr/local/go</code> - decompress
+<code>tar -C /usr/local -xzf go1.18.3.linux-amd64.tar.gz</code> - env
+variable <code>export PATH=$PATH:/usr/loca/go/bin</code>, add to zshrc
+make permanently - remove source file
+<code>rm go1.18.3.linux-amd64.tar.gz</code></p>
+<h3 id="protobuf">protobuf</h3>
+<ul>
+<li>download the particular version <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget  https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-cpp-3.7.1.tar.gz</span><br></pre></td></tr></tbody></table></figure></li>
 <li><code>tar -xzvf protobuf-cpp-3.7.1.tar.gz</code></li>
-<li>install   <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd protobuf-3.7.1</span><br><span class="line">./configure</span><br><span class="line">make</span><br><span class="line">make check</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig</span><br></pre></td></tr></tbody></table></figure></li>
-<li>to support golang <code>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest</code></li>
+<li>install <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd protobuf-3.7.1</span><br><span class="line">./configure</span><br><span class="line">make</span><br><span class="line">make check</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig</span><br></pre></td></tr></tbody></table></figure></li>
+<li>to support golang
+<code>go install google.golang.org/protobuf/cmd/protoc-gen-go@latest</code></li>
 </ul>
-<h3 id="tmux"><a href="#tmux" class="headerlink" title="tmux"></a>tmux</h3><p>If you want to install tmux2, just use <code>yum</code> or <code>dnf</code></p>
-<p>Install tmux 3.0</p>
+<h3 id="tmux">tmux</h3>
+<p>If you want to install tmux2, just use <code>yum</code> or
+<code>dnf</code></p>
+<p>Install tmux 3.0 - install deps </p><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install libtermcap-devel ncurses-devel libevent-devel readline-devel</span><br></pre></td></tr></tbody></table></figure> <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/tmux/tmux.git</span><br><span class="line">cd ./tmux</span><br><span class="line">git checkout 3.0</span><br><span class="line">sh autogen.sh</span><br><span class="line">./configure &amp;&amp; make</span><br><span class="line">sudo make install</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h3 id="vim">vim</h3>
+<p>follow the instruction by <a href="git@github.com:anschen1994/vimrc.git">url</a></p>
+<h3 id="tldr">tldr</h3>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dnf install nodejs</span><br><span class="line">npm install tldr</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="tensorflow">tensorflow</h3>
+<p><strong><em>tensoflow 1.15 is not supported by python3.8 and later
+version. If you want to install 1.15, pls install
+python3.7</em></strong></p>
+<h3 id="docker">docker</h3>
+<p>remove images store position</p>
+<h3 id="vscode">vscode</h3>
+<h4 id="vscode-free-key-pass">vscode free key pass</h4>
 <ul>
-<li>install deps  <figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install libtermcap-devel ncurses-devel libevent-devel readline-devel</span><br></pre></td></tr></tbody></table></figure>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/tmux/tmux.git</span><br><span class="line">cd ./tmux</span><br><span class="line">git checkout 3.0</span><br><span class="line">sh autogen.sh</span><br><span class="line">./configure &amp;&amp; make</span><br><span class="line">sudo make install</span><br></pre></td></tr></tbody></table></figure>
-</li>
-</ul>
-<h3 id="vim"><a href="#vim" class="headerlink" title="vim"></a>vim</h3><p>follow the instruction by <a href="git@github.com:anschen1994/vimrc.git">url</a></p>
-<h3 id="tldr"><a href="#tldr" class="headerlink" title="tldr"></a>tldr</h3><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dnf install nodejs</span><br><span class="line">npm install tldr</span><br></pre></td></tr></tbody></table></figure>
-<h3 id="tensorflow"><a href="#tensorflow" class="headerlink" title="tensorflow"></a>tensorflow</h3><p><strong><em>tensoflow 1.15 is not supported by python3.8 and later version. If you want to install 1.15, pls install python3.7</em></strong></p>
-<h3 id="docker"><a href="#docker" class="headerlink" title="docker"></a>docker</h3><p>remove images store position</p>
-<h3 id="vscode"><a href="#vscode" class="headerlink" title="vscode"></a>vscode</h3><h4 id="vscode-free-key-pass"><a href="#vscode-free-key-pass" class="headerlink" title="vscode free key pass"></a>vscode free key pass</h4><ul>
 <li>local generate ssh-key <code>ssh-keygen -o</code></li>
-<li>copy <code>id_rsa.pub</code> to your remote server <code>id_rsa.pub</code> and <code>authorized_keys</code></li>
+<li>copy <code>id_rsa.pub</code> to your remote server
+<code>id_rsa.pub</code> and <code>authorized_keys</code></li>
 </ul>
-<h1 id="从零配置mac"><a href="#从零配置mac" class="headerlink" title="从零配置mac"></a>从零配置mac</h1><h2 id="系统"><a href="#系统" class="headerlink" title="系统"></a>系统</h2><p>系统快捷键:<br></p><figure class="highlight plain"><figcaption><span>```Setting```-&gt;```Keyboard```-&gt;```Keyboard Shorcuts```-&gt;```Modifier Keys```</span></figcaption><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Safari地址栏搜索引擎修改：```Safari```-&gt;```Setting```-&gt;```Search</span><br></pre></td></tr></tbody></table></figure><p></p>
-<h2 id="VSCode"><a href="#VSCode" class="headerlink" title="VSCode"></a>VSCode</h2><ol>
+<h1 id="从零配置mac">从零配置mac</h1>
+<h2 id="系统">系统</h2>
+<p>系统快捷键: </p><figure class="highlight plain"><figcaption><span>```Setting```-&gt;```Keyboard```-&gt;```Keyboard Shorcuts```-&gt;```Modifier Keys```</span></figcaption><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Safari地址栏搜索引擎修改：```Safari```-&gt;```Setting```-&gt;```Search</span><br></pre></td></tr></tbody></table></figure><p></p>
+<h2 id="vscode-1">VSCode</h2>
+<ol type="1">
 <li>选择使用<code>github</code>账号同步</li>
-<li><code>vim</code>插件，repeated keys, 运行下面的指令:<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code</span><br><span class="line">defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider</span><br><span class="line">defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false         # For VS Codium</span><br><span class="line">defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users</span><br><span class="line">defaults delete -g ApplePressAndHoldEnabled</span><br></pre></td></tr></tbody></table></figure>
-并且可以在光标移动的速度: <code>System Preference</code>-&gt;<code>Keyboard</code></li>
+<li><code>vim</code>插件，repeated keys, 运行下面的指令: <figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code</span><br><span class="line">defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider</span><br><span class="line">defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false         # For VS Codium</span><br><span class="line">defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users</span><br><span class="line">defaults delete -g ApplePressAndHoldEnabled</span><br></pre></td></tr></tbody></table></figure>
+并且可以在光标移动的速度:
+<code>System Preference</code>-&gt;<code>Keyboard</code></li>
 </ol>
-<h2 id="Terminal"><a href="#Terminal" class="headerlink" title="Terminal"></a>Terminal</h2><ol>
+<h2 id="terminal">Terminal</h2>
+<ol type="1">
 <li>安装<code>iterm2</code></li>
 <li>安装<code>homebrew</code></li>
-<li>安装<code>oh-my-zsh</code><ul>
-<li>安装插件<code>https://mdnice.com/writing/6774c6693d374e548b0a4434f85dceb6</code></li>
-</ul>
-</li>
-<li>安装<code>tldr</code>: <code>brew install tldr</code></li>
-<li><pre><code class="lang-LazyVim```配置:"> - ```brew install neovim
-</code></pre>
+<li>安装<code>oh-my-zsh</code>
 <ul>
+<li>安装插件<code>https://mdnice.com/writing/6774c6693d374e548b0a4434f85dceb6</code></li>
+</ul></li>
+<li>安装<code>tldr</code>: <code>brew install tldr</code></li>
+<li><code>LazyVim</code>配置:
+<ul>
+<li><code>brew install neovim</code></li>
 <li>Follow <code>https://www.lazyvim.org/installation</code></li>
-</ul>
-</li>
-<li>安装<code>tmux</code><ul>
+</ul></li>
+<li>安装<code>tmux</code>
+<ul>
 <li><code>brew install tmux</code></li>
 <li>拷贝配置文件<code>mac_tmux.conf</code></li>
-</ul>
-</li>
-<li>配置vim模式: 在<code>.zshrc</code>的plugin中加入<code>vi-mode</code>插件 </li>
+</ul></li>
+<li>配置vim模式:
+在<code>.zshrc</code>的plugin中加入<code>vi-mode</code>插件</li>
 </ol>
-<h2 id="Python"><a href="#Python" class="headerlink" title="Python"></a>Python</h2><ol>
+<h2 id="python">Python</h2>
+<ol type="1">
 <li>安装<code>miniconda</code></li>
 </ol>
-<h2 id="git-1"><a href="#git-1" class="headerlink" title="git"></a>git</h2><figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh &amp;&amp; ssh-keygen -t ecdsa -b 521 -C "your_email"</span><br></pre></td></tr></tbody></table></figure>
-<h2 id="zsh-1"><a href="#zsh-1" class="headerlink" title="zsh"></a>zsh</h2><p>插件</p>
-<ul>
-<li><code>``zsh-autosuggestions</code></li>
-<li><code>``zsh-syntax-highlighting</code></li>
-</ul>
+<h2 id="git-1">git</h2>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh &amp;&amp; ssh-keygen -t ecdsa -b 521 -C "your_email"</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="zsh-1">zsh</h2>
+<p>插件 -
+<code>zsh-autosuggestions` -</code>zsh-syntax-highlighting`</p>
 <script>
         document.querySelectorAll('.github-emoji')
           .forEach(el => {
@@ -450,7 +462,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Prepare-Work-Env-for-Linux"><span class="nav-number">1.</span> <span class="nav-text">Prepare Work Env for Linux</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Software-install"><span class="nav-number">1.1.</span> <span class="nav-text">Software install</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#git"><span class="nav-number">1.1.1.</span> <span class="nav-text">git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zsh"><span class="nav-number">1.1.2.</span> <span class="nav-text">zsh</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gcc"><span class="nav-number">1.1.3.</span> <span class="nav-text">gcc</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#centos-under-7-6"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">centos under 7.6</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cento-beyond-7-6"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">cento beyond 7.6</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#conda"><span class="nav-number">1.1.4.</span> <span class="nav-text">conda</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#go"><span class="nav-number">1.1.5.</span> <span class="nav-text">go</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#protobuf"><span class="nav-number">1.1.6.</span> <span class="nav-text">protobuf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tmux"><span class="nav-number">1.1.7.</span> <span class="nav-text">tmux</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vim"><span class="nav-number">1.1.8.</span> <span class="nav-text">vim</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tldr"><span class="nav-number">1.1.9.</span> <span class="nav-text">tldr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tensorflow"><span class="nav-number">1.1.10.</span> <span class="nav-text">tensorflow</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#docker"><span class="nav-number">1.1.11.</span> <span class="nav-text">docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vscode"><span class="nav-number">1.1.12.</span> <span class="nav-text">vscode</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#vscode-free-key-pass"><span class="nav-number">1.1.12.1.</span> <span class="nav-text">vscode free key pass</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#从零配置mac"><span class="nav-number">2.</span> <span class="nav-text">从零配置mac</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#系统"><span class="nav-number">2.1.</span> <span class="nav-text">系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VSCode"><span class="nav-number">2.2.</span> <span class="nav-text">VSCode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Terminal"><span class="nav-number">2.3.</span> <span class="nav-text">Terminal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python"><span class="nav-number">2.4.</span> <span class="nav-text">Python</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git-1"><span class="nav-number">2.5.</span> <span class="nav-text">git</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zsh-1"><span class="nav-number">2.6.</span> <span class="nav-text">zsh</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#prepare-work-env-for-linux"><span class="nav-number">1.</span> <span class="nav-text">Prepare Work Env for Linux</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#git"><span class="nav-number">1.0.1.</span> <span class="nav-text">git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zsh"><span class="nav-number">1.0.2.</span> <span class="nav-text">zsh</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gcc"><span class="nav-number">1.0.3.</span> <span class="nav-text">gcc</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#cento-beyond-7.6"><span class="nav-number">1.0.3.1.</span> <span class="nav-text">cento beyond 7.6</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#conda"><span class="nav-number">1.0.4.</span> <span class="nav-text">conda</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#go"><span class="nav-number">1.0.5.</span> <span class="nav-text">go</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#protobuf"><span class="nav-number">1.0.6.</span> <span class="nav-text">protobuf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tmux"><span class="nav-number">1.0.7.</span> <span class="nav-text">tmux</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vim"><span class="nav-number">1.0.8.</span> <span class="nav-text">vim</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tldr"><span class="nav-number">1.0.9.</span> <span class="nav-text">tldr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tensorflow"><span class="nav-number">1.0.10.</span> <span class="nav-text">tensorflow</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#docker"><span class="nav-number">1.0.11.</span> <span class="nav-text">docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vscode"><span class="nav-number">1.0.12.</span> <span class="nav-text">vscode</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#vscode-free-key-pass"><span class="nav-number">1.0.12.1.</span> <span class="nav-text">vscode free key pass</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#从零配置mac"><span class="nav-number">2.</span> <span class="nav-text">从零配置mac</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#系统"><span class="nav-number">2.1.</span> <span class="nav-text">系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vscode-1"><span class="nav-number">2.2.</span> <span class="nav-text">VSCode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#terminal"><span class="nav-number">2.3.</span> <span class="nav-text">Terminal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#python"><span class="nav-number">2.4.</span> <span class="nav-text">Python</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git-1"><span class="nav-number">2.5.</span> <span class="nav-text">git</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zsh-1"><span class="nav-number">2.6.</span> <span class="nav-text">zsh</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
