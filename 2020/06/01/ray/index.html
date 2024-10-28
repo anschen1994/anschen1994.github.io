@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://anschen1994.github.io/2020/06/01/ray/arche.png">
 <meta property="article:published_time" content="2020-05-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-10-18T04:42:25.636Z">
+<meta property="article:modified_time" content="2024-10-28T12:41:44.116Z">
 <meta property="article:author" content="AnsChen">
 <meta property="article:tag" content="强化学习">
 <meta name="twitter:card" content="summary">
@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-10-18 12:42:25" itemprop="dateModified" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -234,7 +234,7 @@
 <p>在Ray的框架里，采取了一种成为动力学计算图(Dynamics task graph computation)的计算模式。在Ray里面有三个主要节点：Task, Actor, Data Object。Task用来完成stateless的计算，Actor用来做stateful的计算，Data Object用来存储数据。那么很容易想象这个三者之间都存在某种序的关系，或者所谓的动力学关系。比如一个Task需要另一个Task的输出作为输入，同时随着计算的进行，数据也在不断的更新迭代，那么数据流的方向也具有动力学意义。对于Actor，Ray将其内部的状态的改变也转换成一个有方向的动力学过程。这有点类似把一个自循环的图展开计算。这样Ray的计算图就完全转化成一个无状态的动力学计算图。</p>
 <h2 id="架构">架构</h2>
 <p>这边我们介绍Ray是如何架构整个过程来完成上面的计算的并解决问题的。</p>
-<p><img src="arche.png"></p>
+<img src="/2020/06/01/ray/arche.png" class="" title="This is an image">
 <p>avatar: /figures/ray/arche.png 整个架构分为两层:App Layer + System Layer.</p>
 <ul>
 <li>App Layer
@@ -390,20 +390,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -438,7 +438,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

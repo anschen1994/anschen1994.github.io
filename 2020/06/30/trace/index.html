@@ -28,7 +28,7 @@
 <meta property="og:description" content="摘要 在这篇blog中，我们会介绍几个trace技巧，同时介绍研究人员如何用trace来把off-policy的数据纠正来计算关于on-policy的objective。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-06-30T08:21:56.000Z">
-<meta property="article:modified_time" content="2023-10-18T04:42:25.636Z">
+<meta property="article:modified_time" content="2024-10-28T12:41:44.116Z">
 <meta property="article:author" content="AnsChen">
 <meta property="article:tag" content="强化学习">
 <meta name="twitter:card" content="summary">
@@ -193,7 +193,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-10-18 12:42:25" itemprop="dateModified" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -222,7 +222,11 @@
 <!-- ### 简介 -->
 <p>众所周知，在强化学习中，我们需要估计value function，也就是要计算下面<span class="math inline">\(G_t\)</span>的数学期望。 <span class="math display">\[
 G_t = R_{t+1} + \gamma R_{t+2} + \cdots + \gamma^{T-t-1}R_T
-\]</span> 那么很自然的有两种流派： - 第一种就是每次完备地收集<span class="math inline">\(R_{t+1},\cdots, R_T\)</span>这些数据，然后不断重复，最后计算出一个sample mean，这就是完全的基于return的方式。因为完备地获取数据需要不断的蒙特卡罗模拟整个过程，所以也称之蒙特卡罗方法。 - 第二种就是我们只模拟到某一步，剩下的部分用一个函数去近似，然后整个过程bootstrap。在最极端的情况下，就是只模拟一步，剩下全部用函数来近似:<span class="math inline">\(G_t=R_{t+1}+\gamma V(S_{t+1})\)</span></p>
+\]</span> 那么很自然的有两种流派：</p>
+<ul>
+<li>第一种就是每次完备地收集<span class="math inline">\(R_{t+1},\cdots, R_T\)</span>这些数据，然后不断重复，最后计算出一个sample mean，这就是完全的基于return的方式。因为完备地获取数据需要不断的蒙特卡罗模拟整个过程，所以也称之蒙特卡罗方法。</li>
+<li>第二种就是我们只模拟到某一步，剩下的部分用一个函数去近似，然后整个过程bootstrap。在最极端的情况下，就是只模拟一步，剩下全部用函数来近似:<span class="math inline">\(G_t=R_{t+1}+\gamma V(S_{t+1})\)</span></li>
+</ul>
 <p>当然这边我们考虑一个比较general的做法，就是模拟 <span class="math inline">\(n\)</span> 步。我们可以定义<span class="math inline">\(n\)</span>步return的概念， <span class="math display">\[
 G_t^{t+n}=R_{t+1}+\gamma R_{t+2}+\cdots+\gamma^{n-1}R_{t+n}+\gamma^n V(S_{t+n}) \tag{1}
 \]</span> 即所谓的中庸之道。当然因为<span class="math inline">\(n\)</span>步的return在实际操作中的花费会比较大，因为每次都需要向前模拟<span class="math inline">\(n\)</span>步。因此人们提出来了<span class="math inline">\(TD(\lambda)\)</span>。</p>
@@ -242,7 +246,20 @@ E_{t}(s) = \gamma\lambda E_{t-1}(s) + I_{s=S_t}
 <h3 id="summary">Summary</h3>
 <p>在这个部分，我会考虑如何使用trace的技巧来弥补off-policy和on-policy的差距。比如我们的数据是从策略<span class="math inline">\(\mu\)</span>中而来，但我们的目标是要估计<span class="math inline">\(Q^{\pi}\)</span>而非<span class="math inline">\(Q^{\mu}\)</span>,那我们需要怎么做呢。最简单的和我们之前所讨论一样使用importance sampling。假设我们有一个比较general的操作， <span class="math display">\[
 \mathcal{R}Q(s,a):=Q(s,a)+E_{\mu}\left[\sum_{t\ge 0}\gamma^t (\prod_{s=1}^tc_s)(r_t+\gamma E_{\pi}Q(s_{t+1},\cdot)-Q(s_t,a_t))\right]
-\]</span> - Importance Sampling [^3] (<span class="math inline">\(c_s=\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\)</span>) 显然我们可以纠正off-policy，但是这种做法有个问题，就是在一般情况下，<span class="math inline">\(\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\)</span>有很高的方差，就会导致算法很不稳定。 - Off-policy <span class="math inline">\(Q^{\pi}(\lambda), Q^{*}(\lambda)\)</span> [^5] (<span class="math inline">\(c_s =\lambda\)</span>) 这种trace需要策略<span class="math inline">\(\mu\)</span>不是那么off-policy。量化来讲，如果<span class="math inline">\(\epsilon=\max_s\|\pi(\cdot|s)-\mu(\cdot|s)\|_1\)</span>，为了保证<span class="math inline">\(Q^{\pi}(\lambda)\)</span>收缩性质，<span class="math inline">\(\lambda &lt; \frac{1-\gamma}{\gamma\epsilon}\)</span>; 为了保证<span class="math inline">\(Q^{*}(\lambda)\)</span>的收缩性质，<span class="math inline">\(\lambda &lt; \frac{1-\gamma}{2\gamma}\)</span>。 - Tree-backup, TB(<span class="math inline">\(\lambda\)</span>) <span class="math inline">\((c_s=\lambda\pi(a_s|s_s))\)</span> 这种方式可以保证任意的off-policy都能收敛，但是很明显，如果<span class="math inline">\(\mu\)</span>和<span class="math inline">\(\pi\)</span>很接近，那么效率就会很低，因为<span class="math inline">\(c_s\)</span>一直discount采样的效率，而在这种情况适合的<span class="math inline">\(c_s\)</span>应该在<span class="math inline">\(1\)</span>附近。 - Retrace(<span class="math inline">\(\lambda\)</span>)[^1] (<span class="math inline">\(c_s=\lambda \min\left(1, \frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\right)\)</span>) 这个方法就是综合了上面三个方法的特点。 - 给了trace一个bound，限制了方差 - on-policy的时候，没有一直discount trace - off-policy的时候，限制了trace。 - V-trace [^2] (<span class="math inline">\(c_s=\min(\lambda,\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)})\)</span>) V-trace除了用了一个不同的trace，还直接把temporal difference做了纠正，即映射用的是， <span class="math display">\[
+\]</span></p>
+<ul>
+<li>Importance Sampling [^3] (<span class="math inline">\(c_s=\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\)</span>) 显然我们可以纠正off-policy，但是这种做法有个问题，就是在一般情况下，<span class="math inline">\(\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\)</span>有很高的方差，就会导致算法很不稳定。</li>
+<li>Off-policy <span class="math inline">\(Q^{\pi}(\lambda), Q^{*}(\lambda)\)</span> [^5] (<span class="math inline">\(c_s =\lambda\)</span>) 这种trace需要策略<span class="math inline">\(\mu\)</span>不是那么off-policy。量化来讲，如果<span class="math inline">\(\epsilon=\max_s\|\pi(\cdot|s)-\mu(\cdot|s)\|_1\)</span>，为了保证<span class="math inline">\(Q^{\pi}(\lambda)\)</span>收缩性质，<span class="math inline">\(\lambda &lt; \frac{1-\gamma}{\gamma\epsilon}\)</span>; 为了保证<span class="math inline">\(Q^{*}(\lambda)\)</span>的收缩性质，<span class="math inline">\(\lambda &lt; \frac{1-\gamma}{2\gamma}\)</span>。</li>
+<li>Tree-backup, TB(<span class="math inline">\(\lambda\)</span>) <span class="math inline">\((c_s=\lambda\pi(a_s|s_s))\)</span> 这种方式可以保证任意的off-policy都能收敛，但是很明显，如果<span class="math inline">\(\mu\)</span>和<span class="math inline">\(\pi\)</span>很接近，那么效率就会很低，因为<span class="math inline">\(c_s\)</span>一直discount采样的效率，而在这种情况适合的<span class="math inline">\(c_s\)</span>应该在<span class="math inline">\(1\)</span>附近。</li>
+<li>Retrace(<span class="math inline">\(\lambda\)</span>)[^1] (<span class="math inline">\(c_s=\lambda \min\left(1, \frac{\pi(a_s|s_s)}{\mu(a_s|s_s)}\right)\)</span>) 这个方法就是综合了上面三个方法的特点。
+<ul>
+<li>给了trace一个bound，限制了方差</li>
+<li>on-policy的时候，没有一直discount trace</li>
+<li>off-policy的时候，限制了trace。</li>
+</ul></li>
+<li>V-trace [^2] (<span class="math inline">\(c_s=\min(\lambda,\frac{\pi(a_s|s_s)}{\mu(a_s|s_s)})\)</span>)</li>
+</ul>
+<p>V-trace除了用了一个不同的trace，还直接把temporal difference做了纠正，即映射用的是， <span class="math display">\[
 \mathcal{R}Q(s,a):=Q(s,a)+E_{\mu}\left[\sum_{t\ge 0}\gamma^t (\prod_{s=1}^tc_s)\rho_t(r_t+\gamma E_{\pi}Q(s_{t+1},\cdot)-Q(s_t,a_t))\right],
 \]</span> 这边<span class="math inline">\(\rho_t\)</span>是一个被截断IS纠正，<span class="math inline">\(\rho_t=\min(\bar{\rho},\frac{\pi(a_t|s_t)}{\mu(a_t|s_t)})\)</span>并且<span class="math inline">\(\bar{\rho}\ge\lambda \ge 1\)</span>。作者声称的一个好处是在完全on-policy的时候，V-trace可以完全复原也就是<span class="math inline">\(\rho_t=c_s=1\)</span>，但是Retrace不可以<span class="math inline">\(c_s=\lambda\)</span>。</p>
 <h3 id="数学定理">数学定理</h3>
@@ -324,8 +341,8 @@ Q_{k+1} = \mathcal{R}_k Q_k
       <i class="fa fa-chevron-left"></i> 三个分布式RL算法
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/03/19/start-with-hexo/" rel="next" title="Start with Hexo">
-      Start with Hexo <i class="fa fa-chevron-right"></i>
+    <a href="/2021/01/01/%E5%88%9A%E6%80%A7%E6%B3%A1%E6%B2%AB/" rel="next" title="《刚性泡沫》读书笔记">
+      《刚性泡沫》读书笔记 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -399,20 +416,20 @@ Q_{k+1} = \mathcal{R}_k Q_k
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -447,7 +464,7 @@ Q_{k+1} = \mathcal{R}_k Q_k
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

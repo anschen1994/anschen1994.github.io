@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"anschen1994.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Portfolio Optimization 简介 投资组合的优化是量化投资中非常重要的一个环节。假设我们有\(N\)支资产，每个资产收集了\(T\)时间的数据，用 \(X \in \mathrm{R}^{N \times T}\) 表示整个风险收益样本。在量化投资中最核心的两个问题就是： - 给定历史轨迹的条件下，预测未来时间的收益 $ [R_{t+1} |_{t}] $。 - 给定历史轨迹的条">
+  <meta name="description" content="Portfolio Optimization 简介 投资组合的优化是量化投资中非常重要的一个环节。假设我们有\(N\)支资产，每个资产收集了\(T\)时间的数据，用 \(X \in \mathrm{R}^{N \times T}\) 表示整个风险收益样本。在量化投资中最核心的两个问题就是：  给定历史轨迹的条件下，预测未来时间的收益 \(\mathbb{E}[R_{t+1} |\mathcal{F">
 <meta property="og:type" content="article">
-<meta property="og:title" content="AnsChen&#39;s Home">
-<meta property="og:url" content="https://anschen1994.github.io/2023/10/18/port_opt/index.html">
+<meta property="og:title" content="Portfolio Optimization">
+<meta property="og:url" content="https://anschen1994.github.io/2023/10/28/port_opt/index.html">
 <meta property="og:site_name" content="AnsChen&#39;s Home">
-<meta property="og:description" content="Portfolio Optimization 简介 投资组合的优化是量化投资中非常重要的一个环节。假设我们有\(N\)支资产，每个资产收集了\(T\)时间的数据，用 \(X \in \mathrm{R}^{N \times T}\) 表示整个风险收益样本。在量化投资中最核心的两个问题就是： - 给定历史轨迹的条件下，预测未来时间的收益 $ [R_{t+1} |_{t}] $。 - 给定历史轨迹的条">
+<meta property="og:description" content="Portfolio Optimization 简介 投资组合的优化是量化投资中非常重要的一个环节。假设我们有\(N\)支资产，每个资产收集了\(T\)时间的数据，用 \(X \in \mathrm{R}^{N \times T}\) 表示整个风险收益样本。在量化投资中最核心的两个问题就是：  给定历史轨迹的条件下，预测未来时间的收益 \(\mathbb{E}[R_{t+1} |\mathcal{F">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-10-18T05:23:20.483Z">
-<meta property="article:modified_time" content="2023-10-18T05:21:59.065Z">
+<meta property="article:published_time" content="2023-10-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-10-28T12:41:44.116Z">
 <meta property="article:author" content="AnsChen">
-<meta property="article:tag" content="Quantum physics, deep learning, quants">
+<meta property="article:tag" content="量化投资">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://anschen1994.github.io/2023/10/18/port_opt/">
+<link rel="canonical" href="https://anschen1994.github.io/2023/10/28/port_opt/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title> | AnsChen's Home</title>
+  <title>Portfolio Optimization | AnsChen's Home</title>
   
 
 
@@ -163,7 +163,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/18/port_opt/">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/28/port_opt/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -176,7 +176,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
+          Portfolio Optimization
         </h1>
 
         <div class="post-meta">
@@ -185,9 +185,24 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-10-18 13:23:20 / Modified: 13:21:59" itemprop="dateCreated datePublished" datetime="2023-10-18T13:23:20+08:00">2023-10-18</time>
+              <time title="Created: 2023-10-28 00:00:00" itemprop="dateCreated datePublished" datetime="2023-10-28T00:00:00+08:00">2023-10-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%95%E8%B5%84/" itemprop="url" rel="index"><span itemprop="name">投资</span></a>
+                </span>
             </span>
 
           
@@ -203,20 +218,32 @@
       
         <h1 id="portfolio-optimization">Portfolio Optimization</h1>
 <h2 id="简介">简介</h2>
-<p>投资组合的优化是量化投资中非常重要的一个环节。假设我们有<span class="math inline">\(N\)</span>支资产，每个资产收集了<span class="math inline">\(T\)</span>时间的数据，用 <span class="math inline">\(X \in \mathrm{R}^{N \times T}\)</span> 表示整个风险收益样本。在量化投资中最核心的两个问题就是： - 给定历史轨迹的条件下，预测未来时间的收益 $ [R_{t+1} |_{t}] $。 - 给定历史轨迹的条件下，预测未来时间的各个资产之间的correlation,例如 $<em>{t+1} | </em>{t} $。</p>
+<p>投资组合的优化是量化投资中非常重要的一个环节。假设我们有<span class="math inline">\(N\)</span>支资产，每个资产收集了<span class="math inline">\(T\)</span>时间的数据，用 <span class="math inline">\(X \in \mathrm{R}^{N \times T}\)</span> 表示整个风险收益样本。在量化投资中最核心的两个问题就是：</p>
+<ul>
+<li>给定历史轨迹的条件下，预测未来时间的收益 <span class="math inline">\(\mathbb{E}[R_{t+1} |\mathcal{F}_{t}]\)</span>。</li>
+<li>给定历史轨迹的条件下，预测未来时间的各个资产之间的correlation,例如:<span class="math inline">\(\Sigma_{t+1} | \mathcal{F}_{t}\)</span>。</li>
+</ul>
 <p>如果能够很好得完成第一个任务，则就可以追求到人们梦寐以求的超额收益，于此我们也可以想象第一个问题的难度是如何地高，也超过了本篇Blog所想要讨论的范畴。</p>
 <p>我们这边主要会将讨论的内容局限在第二个问题上，假设存在一个上帝已经帮助我们解决了第一个问题，即我们已经拥有了一个相对不错的对未来收益估计的算法，使用记号<span class="math inline">\(\hat{\mu}_{t+1}\)</span> 代表我们对于 $ [R_{t+1} |_{t}]$ 的估计。那么在投资组合这一步，我们往往关注的是下面这个优化问题， <span class="math display">\[
 \max_{w} \hat{\mu}_{t+1}^T w, \\
 f_i(\hat{\mu}_{t+1}, \hat{\Sigma}_{t+1}, w) \le 0, i = 1,2,\cdots, k \\
 g_j(\hat{\mu}_{t+1}, \hat{\Sigma}_{t+1}, w) = 0, j = 1,2,\cdots, l
 \]</span></p>
-<p>用通俗的语言描述，就是在风险可控并且符合法规(例如只允许做多)的条件下，去最大化预期收益。想要控制的风险和其他相关的约束都是用<span class="math inline">\(f, g\)</span>两种形式描述。那么为了很好地解决这个问题，很明显我们有两个问题需要解决： - 准确估计 <span class="math inline">\(\hat{\Sigma}_{t+1}\)</span>， 即上面的第二个任务 - 开发一个高效的优化算法，解决上面这个优化问题。</p>
+<p>用通俗的语言描述，就是在风险可控并且符合法规(例如只允许做多)的条件下，去最大化预期收益。想要控制的风险和其他相关的约束都是用<span class="math inline">\(f, g\)</span>两种形式描述。那么为了很好地解决这个问题，很明显我们有两个问题需要解决：</p>
+<ul>
+<li>准确估计 <span class="math inline">\(\hat{\Sigma}_{t+1}\)</span>， 即上面的第二个任务</li>
+<li>开发一个高效的优化算法，解决上面这个优化问题。</li>
+</ul>
 <h2 id="correlation估计">Correlation估计</h2>
 <p>在这个部分我们将会介绍一下，关于Correlation估计的一些基本的算法。针对这个问题的建模假设，也是被分成了两部分。第一，假设Correlation是静态的；第二，假设Correlation是动态。第一种情况下面，我们拥有一些比较良好的数学保障，但是和现实背离得稍微远一点。第二种情况，则是和现实更近，但是解决该问题的难度也会高上很多。</p>
 <h3 id="静态correlation估计">静态Correlation估计</h3>
 <p>对于静态的Correlation的估计，首先我们会想到一个最基本的方法，就是用样本的协方差矩阵估计全体的协方差矩阵。所谓的样本协方差矩阵，可以写成下面的形式: <span class="math display">\[
 S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\mathbf{I} - \frac{1}{T}\mathbf{1}\mathbf{1}^T)X^T
-\]</span> 从这个表达式，我们就可以看出来一个较为严重的问题, <span class="math inline">\(S\)</span>的rank不会高于<span class="math inline">\(\mathbf{I} - \frac{1}{T}\mathbf{1}\mathbf{1}^T\)</span>, 即不会高于<span class="math inline">\(T\)</span>。那么当你所采集到的数据时间窗口<span class="math inline">\(T\)</span>和<span class="math inline">\(N\)</span>在同一个量级，甚至更低的时候，该估计矩阵很有可能是singluar的，这会极大的影响到后续优化问题的求解。该问题在现实投资中还是比较明显的，尤其是当你的投资频率较低时，该问题会越发显著。那么主流的解决上面这个问题的方法也分成两大主流的流派，当然这两个流派也不完全独立，也是可以混合使用。 - Shrinkage方法 - Multi-factor估计方法</p>
+\]</span> 从这个表达式，我们就可以看出来一个较为严重的问题, <span class="math inline">\(S\)</span>的rank不会高于<span class="math inline">\(\mathbf{I} - \frac{1}{T}\mathbf{1}\mathbf{1}^T\)</span>, 即不会高于<span class="math inline">\(T\)</span>。那么当你所采集到的数据时间窗口<span class="math inline">\(T\)</span>和<span class="math inline">\(N\)</span>在同一个量级，甚至更低的时候，该估计矩阵很有可能是singluar的，这会极大的影响到后续优化问题的求解。该问题在现实投资中还是比较明显的，尤其是当你的投资频率较低时，该问题会越发显著。那么主流的解决上面这个问题的方法也分成两大主流的流派，当然这两个流派也不完全独立，也是可以混合使用。</p>
+<ul>
+<li>Shrinkage方法</li>
+<li>Multi-factor估计方法</li>
+</ul>
 <h4 id="shrinkage">Shrinkage</h4>
 <p>Shrinkage的想法非常的简单，就是既然<span class="math inline">\(S\)</span>本身作为<span class="math inline">\(\Sigma\)</span>的估计在上述 <span class="math inline">\(N,T\)</span> 比较接近的时候有一些问题，那么我们可以再额外另外一个估计 <span class="math inline">\(F\)</span>, 使用这两个估计的组合，例如<span class="math inline">\((1-\delta)S + \delta F\)</span>, 作为<span class="math inline">\(\Sigma\)</span>的估计呢，这边 <span class="math inline">\(\delta\)</span> 是一个描述shrinkage程度的参数。在具体讨论这个<span class="math inline">\(F\)</span>之前，我们可以思考一下引入这个<span class="math inline">\(F\)</span>, 我们需要解决什么，即期望<span class="math inline">\(F\)</span>能够拥有哪些性质。下面是我自己个人的一些想法：</p>
 <p><strong><em>首先，<span class="math inline">\(S\)</span>矩阵对于<span class="math inline">\(\Sigma\)</span>的估计无偏的，但是如果样本量不够的情况下面，其会具有很高的 variance，即统计学习里，常说的 bias-variance trade off。那么很显然，我们是希望引入的<span class="math inline">\(F\)</span>对于 biasness 的容忍度可以高一点，但是希望其有更低的 variance。除此之外，我们期望<span class="math inline">\(F\)</span>的引入可以缓解 singularity 的问题。</em></strong></p>
@@ -231,7 +258,11 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
 \]</span> 该问题的解为 <span class="math display">\[
 \delta^* = \frac{\sum_{ij}\mathbb{Var}[s_{ij}]- \mathbb{Cov}[f_{ij}, s_{ij}]}{\sum_{ij}\mathbb{Var}[s_{ij}-f_{ij}] + (\phi_{ij}-\sigma_{ij})^2}
 \]</span> 其中 <span class="math inline">\(\Phi\)</span> 为构造出来的估计算子 <span class="math inline">\(F\)</span>的真实值。具体可以参考附录<a href="#opt_delta">1</a></p>
-<p>很显然这个式子有两个问题： - 依赖<span class="math inline">\(F, S\)</span>的真实统计，方差和协方差 - 依赖真实未知的 <span class="math inline">\(\Sigma, (\sigma_{ij})\)</span></p>
+<p>很显然这个式子有两个问题：</p>
+<ul>
+<li>依赖<span class="math inline">\(F, S\)</span>的真实统计，方差和协方差</li>
+<li>依赖真实未知的 <span class="math inline">\(\Sigma, (\sigma_{ij})\)</span></li>
+</ul>
 <p>对于第一个问题，我们考虑在<span class="math inline">\(T\)</span>比较大的时候，真实统计和样本估计之间的误差是什么样子的。如果误差较小，那么我们则可以对于 <span class="math inline">\(\delta^*\)</span> 构造一个渐进有效的表达式。 首先对于第一个问题来说，中心极限定理的直觉告诉我们，无论是<span class="math inline">\(\mathbb{Var}[s_{ij}],\mathbb{Cov}[f_{ij}, s_{ij}], \mathbb{Var}[s_{ij}-f_{ij}]\)</span> 其中哪一个，他跟随<span class="math inline">\(T\)</span>的scaling应该都是在 <span class="math inline">\(\frac{1}{T}\)</span> 这量级上，也是就说 <span class="math inline">\(\delta^* \propto \frac{\alpha}{T}\)</span>, 那么一个最合理，也是最符合直觉的猜测，就是我们可以认为： <span class="math display">\[
 \delta^* = \frac{1}{T}\frac{\pi - \rho}{\gamma} + o(\frac{1}{T^2})
 \]</span> 这边, <span class="math display">\[
@@ -290,6 +321,9 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
 
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%87%8F%E5%8C%96%E6%8A%95%E8%B5%84/" rel="tag"># 量化投资</a>
+          </div>
 
         
 
@@ -297,12 +331,12 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2023/10/18/prepare_env/" rel="prev" title="linux工作环境配置">
-      <i class="fa fa-chevron-left"></i> linux工作环境配置
+    <a href="/2023/10/28/successful_trading/" rel="prev" title="Successful Algorithm Trading 读后感">
+      <i class="fa fa-chevron-left"></i> Successful Algorithm Trading 读后感
     </a></div>
       <div class="post-nav-item">
-    <a href="/2023/10/18/bolza/" rel="next" title="Bolza问题, Legendre变换，从最速降线说起">
-      Bolza问题, Legendre变换，从最速降线说起 <i class="fa fa-chevron-right"></i>
+    <a href="/2024/06/01/pbd/" rel="next" title="Position Based Dynamics">
+      Position Based Dynamics <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -376,20 +410,20 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -424,7 +458,7 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -499,12 +533,65 @@ if (document.querySelectorAll('pre.mermaid').length) {
     });
   }, window.mermaid);
 }
+</script>
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
 </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 
-
-  
-
-  
+    
 
   
 

@@ -160,7 +160,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/18/bolza/">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2024/10/28/brockwell/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -174,7 +174,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2023/10/18/bolza/" class="post-title-link" itemprop="url">Bolza问题, Legendre变换，从最速降线说起</a>
+            <a href="/2024/10/28/brockwell/" class="post-title-link" itemprop="url">时间序列阅读笔记</a>
         </h2>
 
         <div class="post-meta">
@@ -184,7 +184,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2023-10-18 13:50:39" itemprop="dateCreated datePublished" datetime="2023-10-18T13:50:39+08:00">2023-10-18</time>
+              <time title="Created: 2024-10-28 20:41:44" itemprop="dateCreated datePublished" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -192,7 +192,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%90%86%E8%AE%BA%E7%89%A9%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">理论物理</span></a>
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
                 </span>
             </span>
 
@@ -207,19 +207,93 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="bolza问题">Bolza问题</h1>
+          <h1 id="时间序列阅读笔记">时间序列阅读笔记</h1>
 <h2 id="引言">引言</h2>
-<p>最近在学习The financial mathematics of market liquidity 和游戏中物理模拟的一些知识，发现这两个地方都涉及到了Bolza问题，决定单独把这块提取出来说一说。我们这边主要把Bolza问题集中在最小化这个小问题上面: <span class="math display">\[
-J = \int_{0}^T f_t(x(t)) + g_t(\dot{x}(t))dt
-\]</span> 并且满足边界条件<span class="math inline">\(x(0) = a, x(T) = b\)</span>。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/10/18/bolza/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+<h3 id="通用的时间序列建模方法">通用的时间序列建模方法</h3>
+<p>操作步骤：</p>
+<ul>
+<li>画出主要feature的图，并查看
+<ul>
+<li>是否有一个趋势(Trend)</li>
+<li>是否有周期的成分(Period)</li>
+<li>是否有突变(Sharp change)</li>
+<li>是否有异常值(Outlier)</li>
+</ul></li>
+<li>移除趋势和周期项，获得一个接近静态的时间序列</li>
+<li>建模拟合剩余的残差项</li>
+<li>预测残差，并加上趋势和周期项，获得最终的预测值</li>
+</ul>
+<h3 id="静态模型">静态模型</h3>
+<blockquote>
+<p><strong>Def</strong>: Weakly Stationary A time series <span class="math inline">\({X_t}\)</span> is called weakly stationary, if 1. <span class="math inline">\(\mu_X(t)\)</span> is independent of time <span class="math inline">\(t\)</span> 2. <span class="math inline">\(\gamma_X(t+h,t)\)</span> is independent of time <span class="math inline">\(t\)</span> for each <span class="math inline">\(h\)</span>, where <span class="math inline">\(\gamma_X(r, s) = Cov(X_r, X_s)\)</span></p>
+</blockquote>
+<p>对于一个静态序列来说，<span class="math inline">\(\gamma_X(h):=\gamma_X(0,h)=\gamma_X(t,t+h)\)</span>, 此时，我们称<span class="math inline">\(\gamma_X(h)\)</span> 为自协方差(auto covariance function).</p>
+<blockquote>
+<p><strong>Def</strong>: AutoCorrelation Function(自相关函数) <span class="math inline">\(\rho_X(h) = \frac{\gamma_X(h)}{\gamma_X(0)}\)</span></p>
+</blockquote>
+<h3 id="估计趋势和周期">估计趋势和周期</h3>
+<p>假设一个时间序列由三个部分构成： <span class="math display">\[
+X_t = m_t + s_t + Y_t
+\]</span> 其中<span class="math inline">\(m_t, s_t\)</span>分别表示确定性的趋势项，周期项。<span class="math inline">\(Y_t\)</span>剩余的一个带有随机性的静态序列。这节我们简单介绍一下一些简单的方法估计<span class="math inline">\(m_t, s_t\)</span></p>
+<h4 id="只有趋势项的时候">只有趋势项的时候</h4>
+<p>如果我们的模型只有趋势项，如下 <span class="math display">\[
+X_t = m_t + Y_t
+\]</span> 那么常见的用来估计趋势项的方法：</p>
+<ul>
+<li>移动平均平滑
+<ul>
+<li>等权平均</li>
+<li>指数平均</li>
+</ul></li>
+<li>过滤高频成分
+<ul>
+<li>傅立叶变换</li>
+<li>其他的谱分析方法</li>
+</ul></li>
+<li>参数化模型并拟合
+<ul>
+<li>多项式拟合</li>
+<li>机器学习，深度学习方法</li>
+</ul></li>
+</ul>
+<p>当然，我们也可以反其道而行，除了我们通过上述的方法，去获取一个预测趋势的模型，我们也可以试图消除趋势，直接获得静态序列<span class="math inline">\(Y_t\)</span>。 消除趋势最常见的方法则是： - 差分</p>
+<blockquote>
+<p><strong>Def</strong>: Lag operator <span class="math display">\[ BX_t = X_{t-1} \]</span></p>
+<p><strong>Def</strong>: Difference operator <span class="math display">\[\nabla = 1 - B\]</span></p>
+</blockquote>
+<p>因此如果<span class="math inline">\(m_t\)</span>是一个<span class="math inline">\(k\)</span>阶的多项式，那么<span class="math inline">\(\nabla^k X_t\)</span> 则足以消除趋势。</p>
+<h4 id="同时有趋势项和周期项">同时有趋势项和周期项</h4>
+<p>上面介绍完了，在只有趋势项的是，我们如何去处理一个时间序列，这边我们考虑的模型更加完整一点，即趋势项和周期项同时存在。 假设周期为<span class="math inline">\(d\)</span>, 一般我们可以遵从下面的步骤：</p>
+<ul>
+<li>使用当前时间点附近<span class="math inline">\(d\)</span>个时间的数据做移动平均，大概估计出一个<span class="math inline">\(\hat{m}_t\)</span></li>
+<li>对于周期内的任意一个时间点<span class="math inline">\(k, 1 \le k \le d\)</span>, 计算<span class="math inline">\(\{x_{k+jd}-\hat{m}_{k+jd}\}, 1 \le k+jd \le n\)</span>的平均，计作<span class="math inline">\(w_t\)</span>, 为了保证周期震荡总体围绕0点震荡，我们可以使用<span class="math inline">\(\hat{s}_t = w_t - \frac{1}{d}\sum_{k=1}^d w_k\)</span> 作为一个不错的周期项估计</li>
+<li>现在我们获得了<strong>去周期</strong>的数据<span class="math inline">\(d_t = x_t -\hat{s}_t\)</span>, 问题则变成了，上面只有趋势项的问题了，我们就可以上一小段列举的方法解决这个问题了。</li>
+</ul>
+<h2 id="stationary-process">Stationary Process</h2>
+<blockquote>
+<p><strong>Def</strong>: Nonnegative definite A real-valued function <span class="math inline">\(\kappa\)</span> defined on integers is non-negative definite, if <span class="math display">\[
+\sum_{i,j}a_i \kappa(i-j) a_j \ge 0
+\]</span> for all positive integer <span class="math inline">\(i,j\)</span> and vector <span class="math inline">\(a=(a_1, a_2, \cdots)^T\)</span></p>
+</blockquote>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
       
     </div>
 
@@ -238,7 +312,7 @@ J = \int_{0}^T f_t(x(t)) + g_t(\dot{x}(t))dt
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/18/port_opt/">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2024/06/01/pbd/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -252,7 +326,7 @@ J = \int_{0}^T f_t(x(t)) + g_t(\dot{x}(t))dt
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2023/10/18/port_opt/" class="post-title-link" itemprop="url">Untitled</a>
+            <a href="/2024/06/01/pbd/" class="post-title-link" itemprop="url">Position Based Dynamics</a>
         </h2>
 
         <div class="post-meta">
@@ -261,9 +335,356 @@ J = \int_{0}^T f_t(x(t)) + g_t(\dot{x}(t))dt
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2023-10-18 13:23:20 / Modified: 13:21:59" itemprop="dateCreated datePublished" datetime="2023-10-18T13:23:20+08:00">2023-10-18</time>
+              <time title="Created: 2024-06-01 00:00:00" itemprop="dateCreated datePublished" datetime="2024-06-01T00:00:00+08:00">2024-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%89%A9%E7%90%86%E6%A8%A1%E6%8B%9F/" itemprop="url" rel="index"><span itemprop="name">物理模拟</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="position-based-dynamics">Position Based Dynamics</h1>
+<blockquote>
+<p>🖌 PBD 这一类物理模拟方法，不同于基于经典力学那套方法，写出动力学方程，然后数值求解 PDE 的范式。而是直接只考虑外力作用，将内力全部归结于不同的约束条件考虑。使用投影的方法去解决外力作用更新之后的约束之间的冲突问题。</p>
+</blockquote>
+<h1 id="basic-info">Basic info</h1>
+<blockquote>
+<p>PBD 相关的物理模拟方法</p>
+</blockquote>
+<ul>
+<li><strong>Author: anschen</strong></li>
+<li><p><strong>Reading cycle</strong></p>
+<ul>
+<li><strong>Start date 2024/05/23</strong></li>
+<li><strong>End date 2024/06/10</strong></li>
+</ul></li>
+</ul>
+<h1 id="notations">Notations</h1>
+<hr>
+<p>三维空间的向量 对时间求全导数</p>
+<p><span class="math display">\[
+\mathbf{x}
+\]</span></p>
+<p><span class="math display">\[
+\dot{x}
+\]</span></p>
+<hr>
+<h1 id="position-based-dynamics-1">Position Based Dynamics</h1>
+<p>在这个章节，我们将主要介绍原始的 PBD 算法的细节和原理，从而构建一个完整的 PBD 这套方法论的大框架。</p>
+<h2 id="model">Model</h2>
+<p>我们考虑如下建模场景，对于一个物体，有<span class="math inline">\(N\)</span>个顶点， <span class="math inline">\(M\)</span>个约束条件，每个顶点的质量，位置，速度分别为<span class="math inline">\(m_i,\mathbf{x}_i,\mathbf{v}_i\)</span>。这边的约束条件可以按照如下的语言描述：</p>
+<ol type="1">
+<li>A cardinality <span class="math inline">\(n_j\)</span></li>
+<li>A function <span class="math inline">\(C_j:\mathbb{R}^{3n_j}&nbsp;\to&nbsp;\mathbb{R}\)</span></li>
+<li>A set of indices <span class="math inline">\(\{i_1,&nbsp;\cdots,&nbsp;i_{n_j}\},&nbsp;i_k&nbsp;\in&nbsp;[1, \cdots, N]\)</span></li>
+<li>A stiffness parameter <span class="math inline">\(k_j&nbsp;\in&nbsp;[0, 1]\)</span></li>
+<li>A type of <em>equality</em> or <em>inequality </em>, i.e. <span class="math inline">\(C_j(\mathbf{x}_{i_1}, \cdots,&nbsp;\mathbf{x}_{i_{n_j}})&nbsp;=&nbsp;0;\)</span>or <span class="math inline">\(C_j(\mathbf{x}_{i_1}, \cdots,&nbsp;\mathbf{x}_{i_{n_j}})&nbsp;\ge&nbsp;0\)</span></li>
+</ol>
+<h2 id="algorithm">Algorithm</h2>
+<img src="/2024/06/01/pbd/pbd_algo.png" class="" title="This is an image">
+<p>算法总结：</p>
+<ol type="1">
+<li>第 5 步，只考虑外力的作用，相对简单。</li>
+<li>第 7-8 两步，使用临时的位置去生成新的碰撞约束。</li>
+<li>第 9-11 步，则是整个算法的核心，如何通过投影的方式来解决整个约束之间的冲突关系。</li>
+<li>第 12-16 步，则通过使用解决完冲突之后的位置，计算速度，以此保证整个过程的一致性。</li>
+</ol>
+<h3 id="constraint-projection">Constraint Projection</h3>
+<p>在这个小节，我们将详细介绍如何通过迭代投影的方法去解决约束问题。</p>
+<p>首先在经过算法第 5-6 步之后，外力对系统的影响，已经被归纳进入临时的位置<span class="math inline">\(\mathbf{p}_i\)</span>，那么在约束投影这一步，我们需要我们的系统满足下面两条物理定律（下面的两个方程都忽略了固定时间间隔<span class="math inline">\(\Delta t\)</span>）：</p>
+<ol type="1">
+<li>动量守恒 <span class="math inline">\(\sum_i&nbsp;m_i&nbsp;\Delta \mathbf{p}_i&nbsp;=&nbsp;0\)</span></li>
+<li>角动量守恒 <span class="math inline">\(\sum_i&nbsp;\mathbf{r}_i&nbsp;\times&nbsp;m_i&nbsp;\Delta\mathbf{p}_i&nbsp;=&nbsp;0\)</span>，其中<span class="math inline">\(\mathbf{r}_i\)</span>为<span class="math inline">\(\mathbf{p}_i\)</span>到任意旋转中心的矢量。</li>
+</ol>
+<p>对于刚体系统，我们知道任意的约束<span class="math inline">\(C(\mathbf{p}),&nbsp;\mathbf{p}=(\mathbf{p}_1^T,&nbsp;\cdots,&nbsp;\mathbf{p}_n^T)^T\)</span>都应该满足<strong>平移不变性</strong>和<strong>旋转不变性</strong>。因此，这边我们可以借鉴经典力学中的诺特定理[<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Noether%27s_theorem">https://en.wikipedia.org/wiki/Noether%27s_theorem</a>]的推导方式，得出如下重要的结论。</p>
+<blockquote>
+<p>NOTE 如果所有顶点的质量<span class="math inline">\(m_i\)</span>都相等，那么沿着<span class="math inline">\(\nabla_{\mathbf{p}}C(\mathbf{p})\)</span>更新<span class="math inline">\(\Delta\mathbf{p}\)</span>，更新后的系统自动满足动量守恒和角动量守恒。</p>
+</blockquote>
+<p>证明分为两部分：动量守恒和角动量守恒</p>
+<h4 id="动量守恒">动量守恒</h4>
+<p><span class="math display">\[
+C(\mathbf{p}+\Delta\mathbf{p})&nbsp;=&nbsp;C(\mathbf{p})&nbsp;+&nbsp;\nabla_{\mathbf{p}}C(\mathbf{p})\Delta\mathbf{p}+o(\Delta\mathbf{p}^2)
+\]</span></p>
+<p>如果<span class="math inline">\(\Delta\mathbf{p}_i&nbsp;=&nbsp;\delta\mathbf{r},&nbsp;\forall&nbsp;i&nbsp;\in&nbsp;[1, n]&nbsp;\)</span>，即所有顶点平移一个相同的无限小位移<span class="math inline">\(\delta\mathbf{r}\)</span>，那么平移不变性要求如下的方程成立:</p>
+<p><span class="math display">\[
+\sum_i&nbsp;\nabla_{\mathbf{p}_i}C(\mathbf{p})\delta\mathbf{r}&nbsp;=&nbsp;0,&nbsp;\forall&nbsp;\delta\mathbf{r}
+\]</span></p>
+<p>因此，如果<span class="math inline">\(m_i&nbsp;=&nbsp;m\)</span>，我们可以得到动量守恒：<span class="math inline">\(0 = m\sum_i\nabla_{\mathbf{p}_i}C(p)&nbsp;=&nbsp;\sum_im_i&nbsp;\nabla_{\mathbf{p}_i}C(p)\)</span></p>
+<h4 id="角动量守恒">角动量守恒</h4>
+<img src="/2024/06/01/pbd/angular.png" class="" title="This is an image">
+<p>对于旋转不变性，我们可以仿照平移不变性，对<span class="math inline">\(C(\mathbf{p})\)</span>施加一个类似的无穷小旋转变换，如上图所示。那么这个时候，无穷小旋转变化的对应的偏移矢量<span class="math inline">\(\delta\mathbf{r}=\delta\mathbf{\Theta}&nbsp;\times&nbsp;\mathbf{r}\)</span>，因此</p>
+<p><span class="math display">\[
+\sum_i&nbsp;\nabla_{\mathbf{p}_i}C(\mathbf{p})&nbsp;\delta\mathbf{\Theta}&nbsp;\times&nbsp;\mathbf{r}_i&nbsp;=&nbsp;\delta\mathbf{\Theta}&nbsp;\cdot\sum_i&nbsp;\mathbf{r}_i&nbsp;\times&nbsp;\nabla_{\mathbf{p}_i}C(\mathbf{p})&nbsp;=&nbsp;0,&nbsp;\forall&nbsp;\delta\mathbf{\Theta}
+\]</span></p>
+<p>因此，如果<span class="math inline">\(m_i&nbsp;=&nbsp;m\)</span>，我们可以得到动量守恒：<span class="math inline">\(0&nbsp;=&nbsp;m&nbsp;\sum_i&nbsp;\mathbf{r}_i&nbsp;\times&nbsp;\nabla_{\mathbf{p}_i}C(\mathbf{p})&nbsp;=&nbsp;\sum_i&nbsp;\mathbf{r}_i&nbsp;\times&nbsp;m_i\nabla_{\mathbf{p}_i}C(\mathbf{p})\)</span></p>
+<h4 id="更新尺度">更新尺度</h4>
+<p>在我们确定了<span class="math inline">\(\Delta\mathbf{p}\)</span>的更新方向之后，接下来确定更新的步幅则可以完成整个更新工作，最起码对于质量是一样的情况是这样。考虑 equality 类型的约束，即<span class="math inline">\(C(\mathbf{p}+\Delta\mathbf{p})=0,&nbsp;\Delta\mathbf{p}=\lambda&nbsp;\nabla_{\mathbf{p}}C(p)\)</span>，我们可以容易求解出来：</p>
+<p><span class="math display">\[
+\lambda&nbsp;=&nbsp;-\frac{C(\mathbf{p})}{\|\nabla_\mathbf{p}C(\mathbf{p})\|^2}
+\]</span></p>
+<h4 id="不同质量">不同质量</h4>
+<p>在上面的讨论中，我们完整了讨论了，如果质量是相同情况，投影更新规则。但是如果质量各不相同，则上面所说的动量和角动量守恒则会被破坏。以动量守恒为例，平移不变性只能得到<span class="math inline">\(\sum_i\nabla_{\mathbf{p}_i}C(p)=0\)</span>，那么这个时候如果我们仍然要求<span class="math inline">\(\sum_im_i&nbsp;\Delta\mathbf{p}_i&nbsp;=&nbsp;0，\Delta\mathbf{p}_i&nbsp;=&nbsp;\lambda_i&nbsp;\nabla_{\mathbf{p}_i}C(\mathbf{p})\)</span>，一个比较好的处理方式：根据各个顶点的质量<span class="math inline">\(m_i\)</span>去调整更新的步幅<span class="math inline">\(\lambda_i\)</span>。</p>
+<p><span class="math display">\[
+\lambda_i&nbsp;=&nbsp;-\frac{w_i C(\mathbf{p})}{\sum_i w_i \|\nabla_{\mathbf{p_i}}C(\mathbf{p})\|^2},w_i=\frac{1}{m_i}
+\]</span></p>
+<p>对于这样的更新法则，可以同时保证三件事：</p>
+<ol type="1">
+<li>动量守恒</li>
+<li>角动量守恒</li>
+<li><span class="math inline">\(C(\mathbf{p}+\Delta\mathbf{p})=0\)</span></li>
+</ol>
+<h4 id="inequality-约束条件">Inequality 约束条件</h4>
+<p>上面的讨论都是针对了 Equality 类型的约束条件进行的，即<span class="math inline">\(C(\mathbf{p}+\Delta\mathbf{p})=0\)</span>，对于 Inequality 类型的约束条件，我们则可以比较好的处理，因为<span class="math inline">\(\nabla_{\mathbf{p}_i}C(\mathbf{p})\)</span>代表<span class="math inline">\(C(\mathbf{p})\)</span>增加最快的方向，那么如果我们的要求是<span class="math inline">\(C(\mathbf{p}+\Delta\mathbf{p})\ge&nbsp;0\)</span>，我们则可以选择只对那些约束条件还小于 0 的约束进行投影更新。</p>
+<h4 id="stiffness">Stiffness</h4>
+<p>刚度(Stiffness)是指物体抵抗形变的能力。在物理模拟中，刚度决定了物体在受到外力作用时的形变程度。</p>
+<ul>
+<li><strong>高刚度</strong>：如果一个物体或系统的刚度很高，这意味着它不容易形变。在模拟中，高刚度的物体在受到力的作用时会表现出较小的形变，这会使得物体看起来更硬或更紧绷。例如，一根硬木棍在受力时几乎不会弯曲。</li>
+<li><p><strong>低刚度</strong>：相反，低刚度的物体在受力时会表现出较大的形变，这使得物体看起来更软或更容易弯曲。例如，一根橡皮筋在拉伸时会明显延长。 因此，Stiffness 对于整个模拟的影响，可以直接作用到位移<span class="math inline">\(\Delta\mathbf{p}\)</span>上面，即<span class="math inline">\(\Delta\mathbf{p}&nbsp;\leftarrow&nbsp;k\Delta\mathbf{p}\)</span>，但是因为我们整个 Constraint Projection 是一个迭代过程，因此最终的 Stiffness 的影响，变成了非线性的。当然在 PBD 原文中，提出来用<span class="math inline">\((1-k_s)^{n_{iter}}:=1-&nbsp;k\)</span>求解出来的<span class="math inline">\(k_s\)</span>作为每个迭代步骤中 Stiffness 产生的影响。不过个人对于这个做法并不是特别的赞同：</p>
+<ol type="1">
+<li><span class="math inline">\(n_{iter}\)</span>对于不同的模拟和物体，为了保证模拟的精度，是一个可变的量。</li>
+<li><span class="math inline">\((1-k_s)^{n_{iter}}:=1-&nbsp;k\)</span>的由来，是作者认为误差项为<span class="math inline">\((1-k)^{n_{iter}}\)</span>，对于该结论持保守观点。</li>
+</ol></li>
+</ul>
+<p><u>个人观点：原始的 PBD，并不能很好地处理 Stiffness 对于整个模拟的影响，尤其是“物理”意义上的正确处理这个过程。</u></p>
+<h3 id="collision-碰撞">Collision-碰撞</h3>
+<p>对于碰撞来说，一般需要考虑的碰撞情形，可以简单分成两大类：</p>
+<ol type="1">
+<li>和静态物体的碰撞</li>
+<li>和动态物体的碰撞</li>
+</ol>
+<h4 id="静态碰撞">静态碰撞</h4>
+<p>静态约束碰撞即检测被模拟对象和周围环境中静态障碍物之间的碰撞情况。这个过程可以简单抽象成如下的检测：</p>
+<blockquote>
+<p>如果和静态障碍发生碰撞，则在模拟过程<span class="math inline">\(\mathbf{x}_i&nbsp;\to&nbsp;\mathbf{p}_i\)</span>的更新穿过穿过某个法向量为<span class="math inline">\(\mathbf{n}_s\)</span> 表面，因此该约束的数学表示为: <span class="math inline">\(C(\mathbf{p}_i)&nbsp;=&nbsp;(\mathbf{p}_i - \mathbf{p}_s)&nbsp;\cdot&nbsp;\mathbf{n}_s&nbsp;\ge&nbsp;0\)</span>，其中<span class="math inline">\(\mathbf{p}_s\)</span>为射线<span class="math inline">\(\mathbf{x}_i&nbsp;\to&nbsp;\mathbf{p}_i\)</span>和面的投影。</p>
+</blockquote>
+<h4 id="动态碰撞">动态碰撞</h4>
+<p>所谓动态碰撞，即被模拟对象之间发生了碰撞。这个过程可以用如下的语言描述:</p>
+<blockquote>
+<p>假设一个物体的顶点<span class="math inline">\(\mathbf{q}&nbsp;\to&nbsp;\mathbf{p}\)</span>，与另外一个物体发生了碰撞，则另外一个物体存在一个三角面其顶点为<span class="math inline">\(\mathbf{p}_1,\mathbf{p}_2,\mathbf{p}_3\)</span>被穿过，其数学表示为: <span class="math inline">\(C(\mathbf{p},\mathbf{q},\mathbf{p}_1,\mathbf{p}_2,\mathbf{p}_3)&nbsp;:=&nbsp;\pm&nbsp;(\mathbf{p}-\mathbf{q})\cdot&nbsp;((\mathbf{p}_1-\mathbf{p}_2)\times(\mathbf{p}_1-\mathbf{p_3}))&nbsp;\ge&nbsp;0\)</span>，这边<span class="math inline">\(\pm&nbsp;\)</span>取决于最终法向朝向表面的那一侧。</p>
+</blockquote>
+<h3 id="damping">Damping</h3>
+<p>Damping 是指抵抗运动的力，它消耗掉系统的能量。在物理模拟中，阻尼用于模拟那些减缓运动和振动的效果。</p>
+<ul>
+<li><strong>高阻尼</strong>：高阻尼意味着运动能量会快速消耗，导致物体的运动或振动很快减弱直至停止。这在模拟如防震器或是其他需要快速平息振动的场景时非常有用。</li>
+<li><strong>低阻尼</strong>：低阻尼意味着运动能量消耗得慢，物体的运动或振动会持续较长时间。这可以用来模拟如弹簧振动等持续较长时间的动态效果。</li>
+</ul>
+<p>在动力学模拟中，适当的阻尼可以防止系统过度振动或“爆炸”，帮助保持模拟的稳定性和真实性。</p>
+<p>比较简单来描述 Damping 的方式，可以用下面的算法:</p>
+<img src="/2024/06/01/pbd/damping.png" class="" title="This is an image">
+<p>其中<span class="math inline">\(\tilde{\mathbf{r}}_i&nbsp;\in&nbsp;\mathbb{R}^{3\times&nbsp;3},&nbsp;\tilde{\mathbf{r}}_i \mathbf{v}&nbsp;=&nbsp;\mathbf{r}_i\times\mathbf{v}&nbsp;\)</span>。那么对于两种极限的高低阻尼情况:</p>
+<ol type="1">
+<li><span class="math inline">\(k_{damping}&nbsp;=&nbsp;0\)</span> 整个过程保证完全没有阻尼，没有阻尼这部分的更新</li>
+<li><span class="math inline">\(k_{damping}=1\)</span> 整个过程，所有顶点的速度，都为质心平移速度加上顶点的转动速度，整个模式表现为刚体模式。</li>
+</ol>
+<p>从上面的算法中我们也可以看出来，阻尼只是在限制局部的运动，整体的运动并不受影响。</p>
+<h1 id="xpbd">XPBD</h1>
+<p>通过对 PBD 的介绍吗，我们可以知道 PBD 的拥有简洁的算法逻辑，但是正如前面我们提到的，PBD 至少存在如下几个方面的问题：</p>
+<ol type="1">
+<li>PBD 总体上是一个 explicit 的算法，因此非常依赖<span class="math inline">\(\Delta t\)</span>是一个非常小的值，因此需要较长的步数</li>
+<li>PBD 对于 stiffness 的处理，缺乏较强的物理依据，同时还是依赖于不确定的参数 <span class="math inline">\(n_{iter}\)</span></li>
+</ol>
+<p>XPBD 的提出，则是为了缓解上面两个问题带来的模拟效果退化。</p>
+<p>XPBD 的总体思路，回归了原始的牛顿力学，即将约束重构成势能，去求解经典力学的方程。在 PBD 中，约束只是作为等式或者不等式的数学条件存在，在每次模拟过程中，通过数学更新去让新的位置满足对应的约束条件，当然这个过程中保证了一些的物理规律，例如动量守恒，角动量守恒等等。但是正如上面所说，还是存在很多没有那么物理的地方。</p>
+<h2 id="经典力学离散化">经典力学离散化</h2>
+<p>在迭代过程中，位置的信息用如下的序列表示<span class="math inline">\(\mathbf{x}^1,&nbsp;\cdots,&nbsp;\mathbf{x}^i,&nbsp;\mathbf{x}^{i+1},\cdots\)</span>，那么牛顿第二定律可以很简单地写成如下形式:</p>
+<p><span class="math display">\[
+\mathbf{M}\frac{\mathbf{x}^{i+1}-2\mathbf{x}^i+\mathbf{x}^{i-1}}{\Delta t^2}=-\nabla U(\mathbf{x}^{i+1})
+\]</span></p>
+<p>值得注意的是，在方程的右侧我们使用了<span class="math inline">\(U(\mathbf{x}^{i+1})\)</span>而非<span class="math inline">\(U(\mathbf{x}^i)\)</span>，以保证整个过程是一个 implicit 的过程，来缓解对<span class="math inline">\(\Delta t\)</span>要求很小的严苛条件。当然这边的势能<span class="math inline">\(U(\mathbf{x})\)</span>是用来描述约束条件的，可以表示成如下形式：</p>
+<p><span class="math inline">\(U(\mathbf{x})&nbsp;=&nbsp;\frac{1}{2}C^T(\mathbf{x})&nbsp;\boldsymbol{\alpha}^{-1}&nbsp;C(\mathbf{x})\)</span>，</p>
+<p>其中是一个对角矩阵，用来描述 stffiness 强度的倒数，即所谓的 compliant matrix. 因此，</p>
+<p><span class="math display">\[
+\mathbf{M}(\mathbf{x}^{i+1}-2\mathbf{x}^i+\mathbf{x}^{i-1})=-\nabla C^T(\mathbf{x}^{i+1})\boldsymbol{\alpha}^{-1}C(\mathbf{x}^{i+1})\Delta t^2&nbsp;:=&nbsp;\nabla C^T(\mathbf{x}^{i+1})&nbsp;\boldsymbol{\lambda}^{i+1}
+\]</span></p>
+<p>在上面的方程中<span class="math inline">\(\boldsymbol{\lambda}:=-\tilde{\boldsymbol{\alpha}}^{-1}C(\mathbf{x})\)</span>，<span class="math inline">\(\mathbf{x}^{i+1},&nbsp;\boldsymbol{\lambda}^{i+1}\)</span>为需要求解的变量。同时我们知道<span class="math inline">\(\tilde{\mathbf{x}}^i:=2\mathbf{x}^{i}-\mathbf{x}^{i-1}=\mathbf{x}^i+\mathbf{v}^i\Delta t\)</span>。最终需要求解的方程组为如下：</p>
+<p><span class="math display">\[
+\mathbf{M}(\mathbf{x}-\tilde{\mathbf{x}})-\nabla C^T(\mathbf{x})\boldsymbol{\lambda}&nbsp;=&nbsp;0&nbsp;\\
+C(\mathbf{x})+\tilde{\boldsymbol{\alpha}}\boldsymbol{\lambda}&nbsp;=&nbsp;0
+\]</span></p>
+<p>其中<span class="math inline">\(\tilde{\boldsymbol{\alpha}}&nbsp;=&nbsp;\frac{\boldsymbol{\alpha}}{\Delta t^2}\)</span>，同时省略了上标。对于如何求解上面的方程有很多的方法， 这边采用最简单原始的方法，即牛顿迭代法<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E7%89%9B%E9%A1%BF%E6%B3%95%5D">[https://zh.wikipedia.org/wiki/%E7%89%9B%E9%A1%BF%E6%B3%95]</a>, 因此我们直接线性化上面的方程：</p>
+<p><span class="math display">\[
+\left[\begin{array}{cc}\mathbf{M}&nbsp;-&nbsp;(\nabla\nabla^T) C^T(\mathbf{x}^i)&nbsp;\boldsymbol{\lambda}^i&nbsp;&amp;&nbsp;-\nabla C^T(\mathbf{x}^i)&nbsp;\\&nbsp;\nabla C(\mathbf{x}^i)&nbsp;&amp;&nbsp;\tilde{\boldsymbol{\alpha}}\end{array}\right]\left[\begin{array}{c}\Delta\mathbf{x}\\ \Delta\boldsymbol{\lambda}\end{array}\right]=-\left[\begin{array}{c}\mathbf{M}(\mathbf{x}^i-\tilde{\mathbf{x}})-\nabla C^T(\mathbf{x}^i)\boldsymbol{\lambda}^i&nbsp;\\&nbsp;C(\mathbf{x}^i)+\tilde{\boldsymbol{\alpha}}\boldsymbol{\lambda}^i&nbsp;\end{array}\right]
+\]</span></p>
+<p>XPBD 在处理上面的方程，为了更加容易求解，引入了如下两个假设： - <span class="math display">\[(\nabla\nabla^T) C^T(\mathbf{x}^i)&nbsp;\boldsymbol{\lambda}^i&nbsp;\approx&nbsp;0\]</span> - <span class="math display">\[\mathbf{M}(\mathbf{x}^i-\tilde{\mathbf{x}})-\nabla C^T(\mathbf{x}^i)\boldsymbol{\lambda}^i&nbsp;\approx&nbsp;0\]</span></p>
+<p>对于被忽略的两项，我们可以知道误差都在<span class="math inline">\(o(\Delta t^2)\)</span>这个量级上。同时整个方程被简化成：</p>
+<p><span class="math display">\[
+\left[\begin{array}{cc}M&nbsp;&amp;&nbsp;-\nabla C^T(\mathbf{x}^i)&nbsp;\\&nbsp;\nabla C(\mathbf{x}^i)&nbsp;&amp;&nbsp;\tilde{\boldsymbol{\alpha}}\end{array}\right]\left[\begin{array}{c}\Delta\mathbf{x}\\ \Delta\boldsymbol{\lambda}\end{array}\right]=-\left[\begin{array}{c}&nbsp;0&nbsp;\\&nbsp;C(\mathbf{x}^i)+\tilde{\boldsymbol{\alpha}}\boldsymbol{\lambda}^i&nbsp;\end{array}\right]
+\]</span></p>
+<p>使用 Shur Complement[<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Schur_complement">https://en.wikipedia.org/wiki/Schur_complement</a>] 我们可以轻松解出上面的方程:</p>
+<p><span class="math display">\[
+\Delta\mathbf{x}=\mathbf{M}^{-1}\nabla&nbsp;C^T(\mathbf{x}^i)\Delta\boldsymbol{\lambda}\\
+\Delta\boldsymbol{\lambda}=(\nabla C(\mathbf{x}^i)\mathbf{M}^{-1}\nabla C^T(\mathbf{x}^i)+\tilde{\boldsymbol{\alpha}})^{-1}(C(\mathbf{x}^i+\tilde{\boldsymbol{\alpha}}\boldsymbol{\lambda}^i))
+\]</span></p>
+<h2 id="connection-with-pbd">Connection with PBD</h2>
+<p>上面直接给出来了<span class="math inline">\(\Delta\mathbf{x},\Delta\boldsymbol{\lambda}\)</span>的解析更新公式。但是实际使用时，直接对矩阵求逆不是一个很好的操作，更多的时候会采用一些其他的算法来求解线性方程组，例如经典的 Gauss-Seidel 算法。</p>
+<p>然而，在原始论文里，作者直接得出了如下的结论:</p>
+<p><span class="math display">\[
+\Delta\boldsymbol{\lambda}_j=\frac{-C_j(\mathbf{x}^i)-\tilde{\boldsymbol{\alpha}}_j\boldsymbol{\lambda}_j^i}{\nabla C_j(\mathbf{x}^i)M^{-1}\nabla C_j^T(\mathbf{x}^i)+\tilde{\boldsymbol{\alpha}}_j}`
+\]</span></p>
+<p><strong>这边是十分不理解为什么可以讲不同约束之间的相互影响给独立处理。</strong></p>
+<p>当然这边如果处理完毕之后，我们会发现在<span class="math inline">\(\tilde{\boldsymbol{\alpha}}_j=0\)</span>的情况下面，整个过程退化到 PBD 的场景了。</p>
+<h2 id="damping-1">Damping</h2>
+<p>XPBD 中使用了 Rayleigh dissipation potential 来处理能量耗散的问题：</p>
+<p><span class="math display">\[
+D(\mathbf{x}):=\frac{1}{2}\dot{C}^T(\mathbf{x})\boldsymbol{\beta}\dot{C}(\mathbf{x})=\frac{1}{2}\mathbf{v}^T\nabla C^T(\mathbf{x})\boldsymbol{\beta}\nabla C(\mathbf{x})\mathbf{v}
+\]</span></p>
+<p><span class="math inline">\(\boldsymbol{\beta}\)</span>是一个对角矩阵，用来衡量各个约束对于能量耗散的贡献程度。这种形式的耗散是能产生的力的作用:</p>
+<p><span class="math display">\[
+\mathbf{F}=-\nabla_{\mathbf{v}}D&nbsp;=&nbsp;-\nabla C^T(\mathbf{x})\boldsymbol{\beta}\nabla C(\mathbf{x})\mathbf{v}
+\]</span></p>
+<p>如果这个时候，我们定义一个新的<span class="math inline">\(\boldsymbol{\mu}:=-\tilde{\boldsymbol{\beta}}\nabla C(\mathbf{x})\mathbf{v}\)</span>，其中<span class="math inline">\(\tilde{\boldsymbol{\beta}}=\boldsymbol{\beta}\Delta t^2\)</span>，我们就会发现整个过程和上面的推导没有本质的区别，只需要如下的变化：</p>
+<p><span class="math display">\[
+\mathbf{M}(\mathbf{x}-\tilde{\mathbf{x}})-\nabla C^T(\mathbf{x})(\boldsymbol{\lambda}+\boldsymbol{\mu})&nbsp;=&nbsp;0&nbsp;\\
+C(\mathbf{x})+\tilde{\boldsymbol{\alpha}}\tilde{\boldsymbol{\beta}}\nabla C(\mathbf{x})\mathbf{v}+\tilde{\boldsymbol{\alpha}}(\boldsymbol{\lambda}+\boldsymbol{\mu})&nbsp;=&nbsp;0
+\]</span></p>
+<p>如果我们将<span class="math inline">\(\boldsymbol{\lambda}+\boldsymbol{\mu}&nbsp;\to&nbsp;\lambda;&nbsp;\mathbf{v}=\frac{\mathbf{x}-\mathbf{x}_{n}}{\Delta t}\)</span>这样看待，去线性化上面的方程同时使用相同的近似条件，我们会得到:</p>
+<p><span class="math display">\[
+\left[\begin{array}{cc}\mathbf{M}&nbsp;&nbsp;&amp;&nbsp;-\nabla C^T(\mathbf{x}^i)&nbsp;\\&nbsp;\nabla C(\mathbf{x}^i)+\tilde{\boldsymbol{\alpha}}\tilde{\boldsymbol{\beta}}\nabla C(\mathbf{x})\frac{1}{\Delta t}&nbsp;&nbsp;&amp;&nbsp;\tilde{\boldsymbol{\alpha}}\end{array}\right]\left[\begin{array}{c}\Delta\mathbf{x}\\ \Delta\boldsymbol{\lambda}\end{array}\right]=-\left[\begin{array}{c}0\\&nbsp;C(\mathbf{x}^i)+\tilde{\boldsymbol{\alpha}}\boldsymbol{\lambda}^i+\tilde{\boldsymbol{\alpha}}\tilde{\boldsymbol{\beta}}\nabla C(\mathbf{x}^i)\frac{\mathbf{x}^i-\mathbf{x}_n}{\Delta t}&nbsp;\end{array}\right]
+\]</span></p>
+<p>当然这个时候，如果继续使用作者上面奇怪的处理方式，可以得到<span class="math inline">\(\Delta\boldsymbol{\lambda}\)</span>每个分量上的更细法则:</p>
+<p><span class="math display">\[
+\Delta\boldsymbol{\lambda}_j=\frac{-C_j(\mathbf{x}^i)-\tilde{\boldsymbol{\alpha}}_j\boldsymbol{\lambda}_j^i-\boldsymbol{\gamma}_j\nabla C(\mathbf{x}^i)(\mathbf{x}^i-\mathbf{x}_n)}{(1+\boldsymbol{\gamma}_j)\nabla C_j(\mathbf{x}^i)M^{-1}\nabla C_j^T(\mathbf{x}^i)+\tilde{\boldsymbol{\alpha}}_j}
+\]</span></p>
+<p>这边<span class="math inline">\(\boldsymbol{\gamma}_j=\frac{\tilde{\boldsymbol{\alpha}_j}\tilde{\boldsymbol{\beta}_j}}{\Delta t}\)</span></p>
+<h1 id="constraints">Constraints</h1>
+<p>这个章节，我们将介绍几种常见的约束条件，以及其常见的更新条件，即主要给出约束条件关于坐标的梯度表达式。</p>
+<h2 id="length-constraintstretch-constraint">Length Constraint(Stretch Constraint)</h2>
+<p>长度的约束，用来保证相邻两点之间的长度和初始长度接近，因此可以描述成如下的方式:</p>
+<p><span class="math display">\[
+C(\mathbf{x}_i,\mathbf{x}_j):=\|\mathbf{x}_i-\mathbf{x}_j\|-l_{ij}&nbsp;=&nbsp;0
+\]</span></p>
+<blockquote>
+<p><span class="math display">\[\nabla_{\mathbf{x}_i}C(\mathbf{x}_i,\mathbf{x}_j)=\frac{\mathbf{x}_i-\mathbf{x}_j}{\|\mathbf{x}_i-\mathbf{x}_j\|}\]</span></p>
+</blockquote>
+<h2 id="bend-constraint">Bend Constraint</h2>
+<p>Bend Constaint 用来两个相邻三角形之间的夹角接近初始的夹角。</p>
+<p>假设两个三角形公共的边为<span class="math inline">\(\mathbf{x}_1\to\mathbf{x}_2\)</span>，其中第一个三角形另外一个顶点为<span class="math inline">\(\mathbf{x}_3\)</span>，第二个三角形的另外一个顶点为<span class="math inline">\(\mathbf{x}_4\)</span>,那么可以定义我们的约束条件为下面的形式:</p>
+<p><span class="math display">\[
+C(\mathbf{x}_1,\mathbf{x}_2,\mathbf{x}_3,\mathbf{x}_4):=\arccos\left(\frac{\mathbf{p}_2\times\mathbf{p}_3}{\|\mathbf{p}_2\times\mathbf{p}_3\|}\cdot\frac{\mathbf{p}_2\times\mathbf{p}_4}{\|\mathbf{p}_2\times\mathbf{p}_4\|}\right)-\theta:=\arccos I&nbsp;-&nbsp;\theta
+\]</span></p>
+<p>这边<span class="math inline">\(\mathbf{p}_2:=\mathbf{x}_2-\mathbf{x}_1,\mathbf{p}_3:=\mathbf{x}_3-\mathbf{x}_1,\mathbf{p}_4:=\mathbf{x}_4-\mathbf{x}_1\)</span>.</p>
+<p>对于这个复杂表达式子，我们要想获得其对应的梯度，核心则需要计算下面的子表达式的梯度，其他的则使用链式法则就可以，(这边为了方便省去了粗体)。</p>
+<p><span class="math display">\[
+\nabla_x&nbsp;\frac{(x\times y)\cdot z}{\|x\times y\|}=\nabla_x&nbsp;\frac{(y\times z)\cdot x}{\|x\times y\|}=\left(x\cdot(y\times z)\right)\left(\nabla_x\frac{1}{\|x\times&nbsp;y\|}\right)+\frac{y\times z}{\|x\times&nbsp;y\|}
+\]</span></p>
+<p><span class="math inline">\(\nabla_x\|x\times y\|=\frac{\nabla_x\left((x\times y)\cdot(x\times y)\right)}{2\|x\times y\|}=\frac{y\times(x\times&nbsp;y)}{\|x\times y\|}:=y\times n\)</span> 这边我们定义<span class="math inline">\(n:=\frac{x\times y}{\|x\times y\|}\)</span>，那么</p>
+<p><span class="math display">\[
+\nabla_x&nbsp;\frac{(x\times y)\cdot z}{\|x\times y\|}=\frac{(n\cdot z)(n\times y)+y\times z}{\|x\times y\|}
+\]</span></p>
+<p>那么我们定义:</p>
+<p><span class="math display">\[
+\mathbf{n}_1:=\frac{\mathbf{p}_2\times\mathbf{p}_3}{\|\mathbf{p}_2\times\mathbf{p}_3\|};\mathbf{n}_2:=\frac{\mathbf{p}_2\times\mathbf{p}_4}{\|\mathbf{p}_2\times\mathbf{p}_4\|}
+\]</span></p>
+<blockquote>
+<ol type="1">
+<li><span class="math display">\[\nabla C&nbsp;=&nbsp;-\frac{1}{\sqrt{1-I^2}}\nabla I\]</span></li>
+<li><span class="math display">\[\nabla_{\mathbf{x}_3}I=-\frac{I\mathbf{n}_1\times\mathbf{p}_2+\mathbf{p}_2\times\mathbf{n}_2}{\|\mathbf{p}_2\times\mathbf{p}_3\|}\]</span></li>
+<li><span class="math display">\[\nabla_{\mathbf{x}_4}I=-\frac{I\mathbf{n}_2\times\mathbf{p}_2+\mathbf{p}_2\times\mathbf{n}_1}{\|\mathbf{p}_2\times\mathbf{p}_4\|}\]</span></li>
+<li><span class="math display">\[\nabla_{\mathbf{x}_2}I=\frac{I\mathbf{n}_1\times\mathbf{p}_3+\mathbf{p}_3\times\mathbf{n}_2}{\|\mathbf{p}_2\times\mathbf{p}_3\|}+\frac{I\mathbf{n}_2\times\mathbf{p}_4+\mathbf{p}_4\times\mathbf{n}_1}{\|\mathbf{p}_2\times\mathbf{p}_4\|}\]</span></li>
+<li><span class="math display">\[\nabla_{\mathbf{x}_1}I=-\nabla_{\mathbf{x}_2}I-\nabla_{\mathbf{x}_3}I-\nabla_{\mathbf{x}_4}I\]</span></li>
+</ol>
+</blockquote>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/28/port_opt/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/10/28/port_opt/" class="post-title-link" itemprop="url">Portfolio Optimization</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-28 00:00:00" itemprop="dateCreated datePublished" datetime="2023-10-28T00:00:00+08:00">2023-10-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%95%E8%B5%84/" itemprop="url" rel="index"><span itemprop="name">投资</span></a>
+                </span>
             </span>
 
           
@@ -279,20 +700,32 @@ J = \int_{0}^T f_t(x(t)) + g_t(\dot{x}(t))dt
       
           <h1 id="portfolio-optimization">Portfolio Optimization</h1>
 <h2 id="简介">简介</h2>
-<p>投资组合的优化是量化投资中非常重要的一个环节。假设我们有<span class="math inline">\(N\)</span>支资产，每个资产收集了<span class="math inline">\(T\)</span>时间的数据，用 <span class="math inline">\(X \in \mathrm{R}^{N \times T}\)</span> 表示整个风险收益样本。在量化投资中最核心的两个问题就是： - 给定历史轨迹的条件下，预测未来时间的收益 $ [R_{t+1} |_{t}] $。 - 给定历史轨迹的条件下，预测未来时间的各个资产之间的correlation,例如 $<em>{t+1} | </em>{t} $。</p>
+<p>投资组合的优化是量化投资中非常重要的一个环节。假设我们有<span class="math inline">\(N\)</span>支资产，每个资产收集了<span class="math inline">\(T\)</span>时间的数据，用 <span class="math inline">\(X \in \mathrm{R}^{N \times T}\)</span> 表示整个风险收益样本。在量化投资中最核心的两个问题就是：</p>
+<ul>
+<li>给定历史轨迹的条件下，预测未来时间的收益 <span class="math inline">\(\mathbb{E}[R_{t+1} |\mathcal{F}_{t}]\)</span>。</li>
+<li>给定历史轨迹的条件下，预测未来时间的各个资产之间的correlation,例如:<span class="math inline">\(\Sigma_{t+1} | \mathcal{F}_{t}\)</span>。</li>
+</ul>
 <p>如果能够很好得完成第一个任务，则就可以追求到人们梦寐以求的超额收益，于此我们也可以想象第一个问题的难度是如何地高，也超过了本篇Blog所想要讨论的范畴。</p>
 <p>我们这边主要会将讨论的内容局限在第二个问题上，假设存在一个上帝已经帮助我们解决了第一个问题，即我们已经拥有了一个相对不错的对未来收益估计的算法，使用记号<span class="math inline">\(\hat{\mu}_{t+1}\)</span> 代表我们对于 $ [R_{t+1} |_{t}]$ 的估计。那么在投资组合这一步，我们往往关注的是下面这个优化问题， <span class="math display">\[
 \max_{w} \hat{\mu}_{t+1}^T w, \\
 f_i(\hat{\mu}_{t+1}, \hat{\Sigma}_{t+1}, w) \le 0, i = 1,2,\cdots, k \\
 g_j(\hat{\mu}_{t+1}, \hat{\Sigma}_{t+1}, w) = 0, j = 1,2,\cdots, l
 \]</span></p>
-<p>用通俗的语言描述，就是在风险可控并且符合法规(例如只允许做多)的条件下，去最大化预期收益。想要控制的风险和其他相关的约束都是用<span class="math inline">\(f, g\)</span>两种形式描述。那么为了很好地解决这个问题，很明显我们有两个问题需要解决： - 准确估计 <span class="math inline">\(\hat{\Sigma}_{t+1}\)</span>， 即上面的第二个任务 - 开发一个高效的优化算法，解决上面这个优化问题。</p>
+<p>用通俗的语言描述，就是在风险可控并且符合法规(例如只允许做多)的条件下，去最大化预期收益。想要控制的风险和其他相关的约束都是用<span class="math inline">\(f, g\)</span>两种形式描述。那么为了很好地解决这个问题，很明显我们有两个问题需要解决：</p>
+<ul>
+<li>准确估计 <span class="math inline">\(\hat{\Sigma}_{t+1}\)</span>， 即上面的第二个任务</li>
+<li>开发一个高效的优化算法，解决上面这个优化问题。</li>
+</ul>
 <h2 id="correlation估计">Correlation估计</h2>
 <p>在这个部分我们将会介绍一下，关于Correlation估计的一些基本的算法。针对这个问题的建模假设，也是被分成了两部分。第一，假设Correlation是静态的；第二，假设Correlation是动态。第一种情况下面，我们拥有一些比较良好的数学保障，但是和现实背离得稍微远一点。第二种情况，则是和现实更近，但是解决该问题的难度也会高上很多。</p>
 <h3 id="静态correlation估计">静态Correlation估计</h3>
 <p>对于静态的Correlation的估计，首先我们会想到一个最基本的方法，就是用样本的协方差矩阵估计全体的协方差矩阵。所谓的样本协方差矩阵，可以写成下面的形式: <span class="math display">\[
 S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\mathbf{I} - \frac{1}{T}\mathbf{1}\mathbf{1}^T)X^T
-\]</span> 从这个表达式，我们就可以看出来一个较为严重的问题, <span class="math inline">\(S\)</span>的rank不会高于<span class="math inline">\(\mathbf{I} - \frac{1}{T}\mathbf{1}\mathbf{1}^T\)</span>, 即不会高于<span class="math inline">\(T\)</span>。那么当你所采集到的数据时间窗口<span class="math inline">\(T\)</span>和<span class="math inline">\(N\)</span>在同一个量级，甚至更低的时候，该估计矩阵很有可能是singluar的，这会极大的影响到后续优化问题的求解。该问题在现实投资中还是比较明显的，尤其是当你的投资频率较低时，该问题会越发显著。那么主流的解决上面这个问题的方法也分成两大主流的流派，当然这两个流派也不完全独立，也是可以混合使用。 - Shrinkage方法 - Multi-factor估计方法</p>
+\]</span> 从这个表达式，我们就可以看出来一个较为严重的问题, <span class="math inline">\(S\)</span>的rank不会高于<span class="math inline">\(\mathbf{I} - \frac{1}{T}\mathbf{1}\mathbf{1}^T\)</span>, 即不会高于<span class="math inline">\(T\)</span>。那么当你所采集到的数据时间窗口<span class="math inline">\(T\)</span>和<span class="math inline">\(N\)</span>在同一个量级，甚至更低的时候，该估计矩阵很有可能是singluar的，这会极大的影响到后续优化问题的求解。该问题在现实投资中还是比较明显的，尤其是当你的投资频率较低时，该问题会越发显著。那么主流的解决上面这个问题的方法也分成两大主流的流派，当然这两个流派也不完全独立，也是可以混合使用。</p>
+<ul>
+<li>Shrinkage方法</li>
+<li>Multi-factor估计方法</li>
+</ul>
 <h4 id="shrinkage">Shrinkage</h4>
 <p>Shrinkage的想法非常的简单，就是既然<span class="math inline">\(S\)</span>本身作为<span class="math inline">\(\Sigma\)</span>的估计在上述 <span class="math inline">\(N,T\)</span> 比较接近的时候有一些问题，那么我们可以再额外另外一个估计 <span class="math inline">\(F\)</span>, 使用这两个估计的组合，例如<span class="math inline">\((1-\delta)S + \delta F\)</span>, 作为<span class="math inline">\(\Sigma\)</span>的估计呢，这边 <span class="math inline">\(\delta\)</span> 是一个描述shrinkage程度的参数。在具体讨论这个<span class="math inline">\(F\)</span>之前，我们可以思考一下引入这个<span class="math inline">\(F\)</span>, 我们需要解决什么，即期望<span class="math inline">\(F\)</span>能够拥有哪些性质。下面是我自己个人的一些想法：</p>
 <p><strong><em>首先，<span class="math inline">\(S\)</span>矩阵对于<span class="math inline">\(\Sigma\)</span>的估计无偏的，但是如果样本量不够的情况下面，其会具有很高的 variance，即统计学习里，常说的 bias-variance trade off。那么很显然，我们是希望引入的<span class="math inline">\(F\)</span>对于 biasness 的容忍度可以高一点，但是希望其有更低的 variance。除此之外，我们期望<span class="math inline">\(F\)</span>的引入可以缓解 singularity 的问题。</em></strong></p>
@@ -307,7 +740,11 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
 \]</span> 该问题的解为 <span class="math display">\[
 \delta^* = \frac{\sum_{ij}\mathbb{Var}[s_{ij}]- \mathbb{Cov}[f_{ij}, s_{ij}]}{\sum_{ij}\mathbb{Var}[s_{ij}-f_{ij}] + (\phi_{ij}-\sigma_{ij})^2}
 \]</span> 其中 <span class="math inline">\(\Phi\)</span> 为构造出来的估计算子 <span class="math inline">\(F\)</span>的真实值。具体可以参考附录<a href="#opt_delta">1</a></p>
-<p>很显然这个式子有两个问题： - 依赖<span class="math inline">\(F, S\)</span>的真实统计，方差和协方差 - 依赖真实未知的 <span class="math inline">\(\Sigma, (\sigma_{ij})\)</span></p>
+<p>很显然这个式子有两个问题：</p>
+<ul>
+<li>依赖<span class="math inline">\(F, S\)</span>的真实统计，方差和协方差</li>
+<li>依赖真实未知的 <span class="math inline">\(\Sigma, (\sigma_{ij})\)</span></li>
+</ul>
 <p>对于第一个问题，我们考虑在<span class="math inline">\(T\)</span>比较大的时候，真实统计和样本估计之间的误差是什么样子的。如果误差较小，那么我们则可以对于 <span class="math inline">\(\delta^*\)</span> 构造一个渐进有效的表达式。 首先对于第一个问题来说，中心极限定理的直觉告诉我们，无论是<span class="math inline">\(\mathbb{Var}[s_{ij}],\mathbb{Cov}[f_{ij}, s_{ij}], \mathbb{Var}[s_{ij}-f_{ij}]\)</span> 其中哪一个，他跟随<span class="math inline">\(T\)</span>的scaling应该都是在 <span class="math inline">\(\frac{1}{T}\)</span> 这量级上，也是就说 <span class="math inline">\(\delta^* \propto \frac{\alpha}{T}\)</span>, 那么一个最合理，也是最符合直觉的猜测，就是我们可以认为： <span class="math display">\[
 \delta^* = \frac{1}{T}\frac{\pi - \rho}{\gamma} + o(\frac{1}{T^2})
 \]</span> 这边, <span class="math display">\[
@@ -358,7 +795,7 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/18/prepare_env/">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/28/successful_trading/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -372,7 +809,7 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2023/10/18/prepare_env/" class="post-title-link" itemprop="url">linux工作环境配置</a>
+            <a href="/2023/10/28/successful_trading/" class="post-title-link" itemprop="url">Successful Algorithm Trading 读后感</a>
         </h2>
 
         <div class="post-meta">
@@ -382,233 +819,15 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2023-10-18 12:42:25" itemprop="dateCreated datePublished" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
+              <time title="Created: 2023-10-28 00:00:00" itemprop="dateCreated datePublished" datetime="2023-10-28T00:00:00+08:00">2023-10-28</time>
             </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/CS%E5%B7%A5%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">CS工程</span></a>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
                 </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="prepare-work-env-for-linux">Prepare Work Env for Linux</h1>
-<p>Prepare your work environment for linux system</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/10/18/prepare_env/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/18/diffusion_map/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="AnsChen">
-      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="AnsChen's Home">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/10/18/diffusion_map/" class="post-title-link" itemprop="url">Diffusion Map Method</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
               </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-10-18 12:42:25" itemprop="dateCreated datePublished" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="diffusion-map-method">Diffusion map method</h1>
-<p>本篇介绍一种半监督的算法，以及其在理论物理里面的应用</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/10/18/diffusion_map/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/18/nonlinear_analysis/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="AnsChen">
-      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="AnsChen's Home">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/10/18/nonlinear_analysis/" class="post-title-link" itemprop="url">因果分析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-10-18 12:42:25" itemprop="dateCreated datePublished" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="非线性因果分析技术">非线性因果分析技术</h1>
-<p>在基础的统计学中，我们学过用协方差矩阵来表征两个高维随机变量<span class="math inline">\(X=(X_1,X_2,\cdots,X_n)^T, Y=(Y_1,Y_2,\cdots, Y_m)^T\)</span>之间的相关性。但是，我们知道相关性并不意味着独立性，更加不能准确描述因果性。这篇Blog，我们将持续更新一些因果性分析工具。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/10/18/nonlinear_analysis/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/10/18/%E5%88%9A%E6%80%A7%E6%B3%A1%E6%B2%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="AnsChen">
-      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="AnsChen's Home">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/10/18/%E5%88%9A%E6%80%A7%E6%B3%A1%E6%B2%AB/" class="post-title-link" itemprop="url">《刚性泡沫》读书笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-10-18 12:42:25" itemprop="dateCreated datePublished" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
-            </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -630,16 +849,150 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="刚性泡沫">刚性泡沫</h1>
-<p>全书描述了中国经济遇到困境，并认为政府的隐性担保和刚性兑付难辞其咎，同时强调市场自由的重要性。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/10/18/%E5%88%9A%E6%80%A7%E6%B3%A1%E6%B2%AB/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+          <h1 id="successful-algorithm-trading-读后感">Successful Algorithm Trading 读后感</h1>
+<h2 id="概览">概览</h2>
+<h3 id="算法交易和主观交易的对比">算法交易和主观交易的对比</h3>
+<p>优点:</p>
+<ul>
+<li>提高了投研效率</li>
+<li>没有主观输入，受情绪影响较小</li>
+<li>评价指标更加多维</li>
+<li>更高的交易频率，人工操作不来</li>
+</ul>
+<p>缺点:</p>
+<ul>
+<li>需要一定的资金量</li>
+<li>需要较高的科学素养和编程水平</li>
+</ul>
+<h3 id="散户和机构的对比">散户和机构的对比</h3>
+<p>散户的优势:</p>
+<ul>
+<li>小资金量更加灵活</li>
+<li>对冲基金之间人员流动，会导致策略趋同，造成交易拥挤，散户的交易系统和这些关联较小</li>
+<li>散户的交易对市场价格的冲击可以忽略</li>
+</ul>
+<p>散户的劣势:</p>
+<ul>
+<li>对杠杆的使用有更多的限制</li>
+<li>散户的交易在券商的排队往往优先级较低，这会造成实盘和回测有较大差距</li>
+<li>信息数据滞后</li>
+</ul>
+<p>散户对于风险管理相比于基金来说，会更加自由，完全取决于个人的风险偏好。这有好有坏，往往这也会让散户忽略风险管理，把绝大部分时间放在构建交易策略上。</p>
+<p>散户不需要关注交易曲线，不需要和投资者打交道，不需要定期公布事项满足监管，不需要和同行比，不需要和被动投资比。 散户只需要关注的就是绝对收益。</p>
+<h2 id="回测">回测</h2>
+<h3 id="为什么需要回测">为什么需要回测</h3>
+<p>回测可以帮助做到下面几点：</p>
+<ul>
+<li>筛选：可以快速帮我筛选策略</li>
+<li>建模：可以快速验证对市场的想法</li>
+<li>优化：可以精细打磨自己的策略</li>
+</ul>
+<h3 id="回测过程中常见的偏差bias">回测过程中常见的偏差(Bias)</h3>
+<p>我们通过回测慢慢迭代自己的策略的时候，往往也引入了很多的偏差(Bias)，常见的有：</p>
+<ul>
+<li>优化偏差(Optimisation Bias)
+<ul>
+<li>过拟合数据，包括模型，策略超参数等等</li>
+</ul></li>
+<li>未来信息(Look ahead Bias)</li>
+<li>幸存偏差(Survivorship Bias)
+<ul>
+<li>每年有大量的股票退市，但是往往数据集里面只会包含存活至今的股票数据</li>
+</ul></li>
+<li>主观偏差(Cognitive Bias)
+<ul>
+<li>面对回测曲线里面最大回撤在25%，可能较容易接受。但是实盘面对如此的回测往往难以忍受，因此很多策略终止在低点。</li>
+</ul></li>
+</ul>
+<h3 id="交易损耗">交易损耗</h3>
+<p>交易过程中带来的损耗包括但不限于：</p>
+<ul>
+<li>手续费
+<ul>
+<li>印花税</li>
+<li>佣金</li>
+<li>...</li>
+</ul></li>
+<li>滑点(Slippage)
+<ul>
+<li>交易信号对应的价格和实际价格之间的差距</li>
+<li>主要因素包括：波动性，延迟，交易频率</li>
+</ul></li>
+<li>市场冲击</li>
+</ul>
+<h3 id="交易风格">交易风格</h3>
+<p>在确定自己的交易风格之前，我们需要从下面几个方面出发： - 你的性格是什么样子的 - 你所允许的交易时间是怎么样的</p>
+<h2 id="时间序列分析">时间序列分析</h2>
+<p>这一节关于时间序列分析的相关算法，作者讲得非常简洁，不值得记录。</p>
+<h2 id="预测">预测</h2>
+<p>这边作者只是简单减少了一些常见的机器学习算法，例如逻辑回归，线性回归，支持向量机，随机森林等等，以及机器学习当中常见的对于结果判别的方法。</p>
+<h2 id="业绩归因-风险管理">业绩归因 &amp;&amp; 风险管理</h2>
+<p>从各个level的业绩归因，可以更好地回溯整个交易系统的问题。一般可以从如下几个方面看待整个业绩的表现:</p>
+<ul>
+<li>策略
+<ul>
+<li>策略在回测中的模拟</li>
+<li>策略在模拟盘中的表现(模拟盘交易误差几乎可以忽略)</li>
+</ul></li>
+<li>交易执行
+<ul>
+<li>衡量策略提供的交易信号和现实交易执行产生的误差</li>
+</ul></li>
+<li>投资组合管理
+<ul>
+<li>是否存在更加合理的投资组合管理，可以降低交易的损耗</li>
+</ul></li>
+</ul>
+<p>那么何为上述所说的"业绩"呢，一般我们需要从下面几个角度去考虑:</p>
+<ul>
+<li>收益
+<ul>
+<li>总收益: 计算的时候需要考虑杠杆，做空等等因素</li>
+<li>复合年化收益</li>
+</ul></li>
+<li>风险
+<ul>
+<li>回撤(DrawDown)</li>
+<li>收益的波动率</li>
+</ul></li>
+<li>风险收益
+<ul>
+<li>Sharpe Ratio: <span class="math inline">\(\sqrt{N}\frac{\mathbb{E}[R_{\alpha}- R_{\beta}]}{\sqrt{\mathbb{Var}[R_{\alpha} - R_{\beta}]}}\)</span>, 这边<span class="math inline">\(N\)</span>为一年内交易日数目，如果你的收益是按照天计算的话。<span class="math inline">\(R_{\alpha} - R_{\beta}\)</span> 代表超额收益。其中Benchmark可以选择为对应的ETF.</li>
+<li>Sortino Ratio: <span class="math inline">\(\sqrt{N}\frac{\mathbb{E}[R_{\alpha}- R_{\beta}]}{\sqrt{\mathbb{Var}[R_{\alpha} - R_{\beta}]}_d}\)</span>. 这边的下标<span class="math inline">\(d\)</span>代表我们只考虑，当超额收益为负的时候波动率，因为亏损的波动，更加容易交易情绪的波动。</li>
+<li>Calmar Ratio: <span class="math inline">\(\sqrt{N}\frac{\mathbb{E}[R_{\alpha}- R_{\beta}]}{\max \mathbf{drawdown}}\)</span>.</li>
+</ul></li>
+<li>交易指标
+<ul>
+<li>PnL</li>
+<li>Average Period PnL</li>
+<li>Maximum Period Profit</li>
+<li>Maximum Period Loss</li>
+<li>Average Period Profit</li>
+<li>Average Period Loss</li>
+<li>Wining Period</li>
+<li>Losing Period</li>
+<li>Percentage Win/Loss Periods</li>
+</ul></li>
+</ul>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
       
     </div>
 
@@ -739,6 +1092,88 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2023/01/01/prepare_env/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/01/prepare_env/" class="post-title-link" itemprop="url">linux/mac工作环境配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-01-01 00:00:00" itemprop="dateCreated datePublished" datetime="2023-01-01T00:00:00+08:00">2023-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CS%E5%B7%A5%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">CS工程</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="prepare-work-env-for-linux">Prepare Work Env for Linux</h1>
+<p>Prepare your work environment for linux system</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/01/01/prepare_env/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/09/11/linear_regression/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -770,7 +1205,7 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-10-18 12:42:25" itemprop="dateModified" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -903,6 +1338,170 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/07/03/diffusion_map/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/03/diffusion_map/" class="post-title-link" itemprop="url">Diffusion Map Method</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-07-03 00:00:00" itemprop="dateCreated datePublished" datetime="2022-07-03T00:00:00+08:00">2022-07-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="diffusion-map-method">Diffusion map method</h1>
+<p>本篇介绍一种半监督的算法，以及其在理论物理里面的应用</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/07/03/diffusion_map/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/05/01/nonlinear_analysis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/05/01/nonlinear_analysis/" class="post-title-link" itemprop="url">因果分析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-05-01 00:00:00" itemprop="dateCreated datePublished" datetime="2022-05-01T00:00:00+08:00">2022-05-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="非线性因果分析技术">非线性因果分析技术</h1>
+<p>在基础的统计学中，我们学过用协方差矩阵来表征两个高维随机变量<span class="math inline">\(X=(X_1,X_2,\cdots,X_n)^T, Y=(Y_1,Y_2,\cdots, Y_m)^T\)</span>之间的相关性。但是，我们知道相关性并不意味着独立性，更加不能准确描述因果性。这篇Blog，我们将持续更新一些因果性分析工具。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/05/01/nonlinear_analysis/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/03/20/%E5%A4%A7%E8%A1%B0%E9%80%80/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -934,7 +1533,7 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-10-18 12:42:25" itemprop="dateModified" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
+                <time title="Modified: 2024-10-28 20:41:44" itemprop="dateModified" datetime="2024-10-28T20:41:44+08:00">2024-10-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1055,88 +1654,6 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2020/06/30/trace/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="AnsChen">
-      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="AnsChen's Home">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/30/trace/" class="post-title-link" itemprop="url">Trace, off-policy, on-policy</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-06-30 16:21:56" itemprop="dateCreated datePublished" datetime="2020-06-30T16:21:56+08:00">2020-06-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-10-18 12:42:25" itemprop="dateModified" datetime="2023-10-18T12:42:25+08:00">2023-10-18</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="摘要">摘要</h2>
-<p>在这篇blog中，我们会介绍几个trace技巧，同时介绍研究人员如何用trace来把off-policy的数据纠正来计算关于on-policy的objective。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/06/30/trace/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1206,20 +1723,20 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -1254,7 +1771,7 @@ S = \frac{1}{T}(XX^T - \frac{1}{T}X\mathbf{1}\mathbf{1}^TX) = \frac{1}{T}X(\math
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
