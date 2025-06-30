@@ -162,6 +162,696 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2025/06/30/flow/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="AnsChen">
+      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnsChen's Home">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2025/06/30/flow/" class="post-title-link" itemprop="url">Flow and Diffusion Models</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2025-06-30 00:00:00 / Modified: 21:45:43" itemprop="dateCreated datePublished" datetime="2025-06-30T00:00:00+08:00">2025-06-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="flow-and-diffusion-models">Flow and Diffusion Models</h1>
+<blockquote>
+<p>🖌 随着生成的模型发展，Diffusion
+的方法论，也变得越来越系统了，当然介绍相关知识的文档，也层出不穷。这个文档，我由数学到应用，解释当下
+Flow Model，Diffusion Model
+的原理和具体实现。除此之外，这个Blog主要是想将原来那套Stable
+Diffusion的描述语言和现在Flow Matching这套描述语言统一起来。</p>
+</blockquote>
+<h1 id="何为生成">何为生成</h1>
+<p>首先在具体谈论数学模型之前，我们可以思考一下，生成在数学上是在做怎么样的一件事情。归根结底，生成在某种意义上就等价于数学上的“采样”。举个简单例子，我需要生成一张房屋的图片。那其实在数学上我们要做得事情：</p>
+<ul>
+<li>找出 <span class="math inline">\(p(\cdot|house)\)</span>，condition
+on 房屋的整个图片的概率分布是什么样子的。</li>
+<li>从<span class="math inline">\(p(\cdot|house)\)</span>,从上面的这个条件概率中去采样一个样本出来即可。</li>
+</ul>
+<p>但是，我们往往没有办法知道<span class="math inline">\(p(\cdot|house)\)</span>这个分布是什么样子的，因此，整个事情就没有办法很好的实施。那现在主流的生成所采取的方案，尝试建立某种简单初始分布（一般为高斯分布）和目标分布之间的转移方式，就如下面图所示。</p>
+<img src="/2025/06/30/flow/scheme.png" class="" width="500" title="Generation Scheme">
+<h1 id="数学模型">数学模型</h1>
+<p>Flow Model 和 Diffusion Model
+也都是建立上面这种大致的想法上，诞生的两种算法。</p>
+<p>首先无论是生成图片，视频，3D
+模型等等，我们都可以将需要建模的对象，简化成一个高维的随机变量<span class="math inline">\(X_t\in\mathbb{R}^d\)</span></p>
+<h2 id="flow-model">Flow Model</h2>
+<p>Flow Model 使用了简单的 ODE 去建立初始分布和目标分布之间的关系。</p>
+<p><span class="math display">\[
+\frac{dX_t}{dt}=f(X_t, t), t\in[0,1],\\
+f:\mathbb{R}^d\times\mathbb{R} \to \mathbb{R}^d
+\]</span></p>
+<p>同时满足</p>
+<p><span class="math display">\[
+X_0 \sim p_{init}, X_1 \sim p_{target}
+\]</span></p>
+<p>所以对于简单的 Flow Model 来说，我们就是要找到<span class="math inline">\(f(X_t,t)\)</span>去建立两个分布之间的联系。</p>
+<p>当然这个模型被称之为 Flow Model
+的原因。我们会将下面这种满足某个初始点的解称之为 Flow，即：</p>
+<p><span class="math display">\[
+\frac{d}{dt}\psi_t(x_0)=f(\psi_t(x_0),t),\psi_0(x_0)=x_0.
+\]</span></p>
+<p>直观上来说<span class="math inline">\(\psi_t(x_0), \psi_t(x_1),
+\psi_t(x_2), \cdots\)</span> 就构成了初始点在<span class="math inline">\(x_0,x_1,x_2,\cdots\)</span>的一些流，同时这些流在某些时空点<span class="math inline">\((x,t)\)</span>处，有的密集，有的稀疏。</p>
+<h3 id="example">Example</h3>
+<p>下面用一个简单的二维向原点收缩的例子，来可视化这个问题。</p>
+<p><span class="math display">\[
+\frac{dX_t}{dt}=-\theta X_t, X_0 \sim \mathcal{N}(0,5), t\in[0,1]
+\]</span></p>
+<p>这个方程的解可以写成：</p>
+<p><span class="math display">\[
+X_t = e^{-\theta t}X_0
+\]</span></p>
+<p>对应的 flow 为</p>
+<p><span class="math display">\[
+\psi_t(x) = e^{-\theta t}x
+\]</span></p>
+<p>从下面这个图，我们展现上面 Flow Model
+对应的速度，其速度向量，都是沿着自身的反方向指向原点。</p>
+<img src="/2025/06/30/flow/flow_ode.png" class="" width="400" title="Flow ODE">
+<p>我们也可以用简单的 ODE 数值求解方法，并且可视化上面的各种 Flow <span class="math inline">\(\psi_t(x)\)</span>，如下图:</p>
+<img src="/2025/06/30/flow/flow_vec_filed.png" class="" width="400" title="Flow Vector Field">
+<p>这个图中，每个绿点对应初始的<span class="math inline">\(x\)</span>,
+每个红色轨迹，对应着一条 flow <span class="math inline">\(\psi_t(x)\)</span>.</p>
+<h3 id="section"></h3>
+<h2 id="diffusion-model">Diffusion Model</h2>
+<p>在 Flow Model
+中，我们发现整个动力学过程，没有随机性，可以用一个简单的 ODE
+描述。Diffusion Model 则是在 Flow Model
+的基础上，增加了一些随机过程，整体的动力学过程可以用下面的 SDE 描述:</p>
+<p><span class="math display">\[
+dX_t = f(X_t, t)dt + g(X_t, t)dW_t
+\]</span></p>
+<p>这边的<span class="math inline">\(dW_t\)</span>来自于经典的布朗运动，简单来说<span class="math inline">\(dW_t\)</span>描述了一个方差为<span class="math inline">\(dt\)</span>,均值为 0
+的随机扰动。具体数学可以参见，任意介绍随即微积分的教材。</p>
+<p>这边我们就需要注意到对于任意固定的<span class="math inline">\(x\)</span>，我们不再会有一个确定性的流<span class="math inline">\(\psi_t(x)\)</span>，因为就算初始点确定，整个过程依然充满了随机。</p>
+<h3 id="example-1">Example</h3>
+<p>我们扩展一下上面那个简单的 Flow Model，到经典的
+OU(Ornstein-Uhlenbeck) Process.</p>
+<p><span class="math display">\[
+dX^{OU}_t = -\theta X_t dt + \sigma dW_t
+\]</span></p>
+<p>我们可以知道上面 SDE 的解可以写成下面的积分形式：</p>
+<p><span class="math display">\[
+X^{OU}_t = e^{-\theta t}X_0 + \sigma \int_0^t e^{\theta(s-t)}dW_s
+\]</span></p>
+<p>对比上面的
+ODE，我们可以看到两者的数学期望是在任意时刻都是一样的，<span class="math inline">\(\mathbb{E}[X_t^{OU}]=\mathbb{E}[X_t]=e^{-\theta
+t}X_0\)</span>. 但是<span class="math inline">\(X^{OU}_t\)</span>存在明显的随机项，当然通过简单的计算，我们可以知道：</p>
+<p><span class="math display">\[
+\mathbb{Var}[X_t^{OU}] = \frac{\sigma^2}{2\theta}(1-e^{-2\theta t}),
+\mathbb{Cov}[X_t^{OU},X_s^{OU}]=\frac{\sigma^2}{2\theta}(e^{-\theta|t-s|}-e^{-\theta|t+s|})
+\]</span></p>
+<blockquote>
+<p><strong>Flow and Diffusion Model</strong>
+从上面的描述我们可以知道，Flow和Diffusion
+Model都可以使用下面对于随机变量的动力学方程描述: <span class="math display">\[dX_t = f(X_t, t)dt + g(X_t, t)dW_t\]</span> Flow
+Model 只是上面<span class="math display">\[g(X_t,t)\equiv0\]</span>的特殊情况</p>
+</blockquote>
+<p>在下面的这张图中，我们可视化了 OU 过程： <img src="/2025/06/30/flow/ou_simulate.png" class="" width="400" title="Flow ODE"></p>
+<p>从<span class="math inline">\(X_0=5\)</span>出发，给出了这个 SDE
+对应的 50 条可能的
+trajectory，同时用红色虚线，标注了这些轨迹对应的平均值<span class="math inline">\(e^{-\theta t}X_0\)</span></p>
+<h3 id="section-1"></h3>
+<h2 id="fokker-planck-equation">Fokker-Planck Equation</h2>
+<h3 id="定理">定理</h3>
+<p>Fokker-Planck Equation 是描述整个 Flow Model 和 Diffusion Model
+的数学基石。这边主要陈列其几个重要的结果，具体的数学推导可以参考这个
+Blog: <a href="https://www.peterholderrieth.com/blog/2023/The-Fokker-Planck-Equation-and-Diffusion-Models/" target="_blank" rel="noopener">https://www.peterholderrieth.com/blog/2023/The-Fokker-Planck-Equation-and-Diffusion-Models/</a></p>
+<blockquote>
+<p><strong>Fokker-Planck Equation</strong>
+对于一个随机变量其动力学方程满足:<span class="math display">\[dX_t=f(X_t,t)dt+g(X_t,t)dW_t\]</span>,当且仅当其随机变量对应的分布<span class="math inline">\(p_t(x)\)</span>满足下面的动力学方程: <span class="math display">\[\frac{dp_t(x)}{dt}=-\nabla\cdot(f(x,t)p_t(x))+\frac{1}{2}\nabla^2\cdot(g(x,t)g(x,t)^Tp_t(x))\]</span></p>
+</blockquote>
+<p>上面方程第一项比较好理解，对于连续不可压缩的物质来说，散度<span class="math inline">\(\nabla\cdot(f(x,t)p_t(x))\)</span>对应在时空点<span class="math inline">\((x,t)\)</span>处的净流量。第二项则是由<span class="math inline">\(dW_t\)</span>这个布朗运动带来的。从直觉我们可以知道其大概的
+scaling 由方差造成<span class="math inline">\(dW_t^Tg^TgdW_t\sim gg^T
+I_d dt\)</span>。</p>
+<p><strong>Fokker-Planck Equation
+最重要的点，是其成功连接了随机变量的动力学和其分布对应的动力学之间的关系</strong></p>
+<h3 id="example-2">Example</h3>
+<p>这边我们以 OU Process 为例，解释 Fokker-Planck Equation。</p>
+<p>首先 OU Process 的 FPE 可以写成下面的形式:</p>
+<p><span class="math display">\[
+\partial_t
+p_t(x)=\theta\partial_x(xp_t(x))+\frac{1}{2}\sigma^2\partial_x^2p_t(x)
+\]</span></p>
+<p>上面这个 PDE 对应的解为(具体数学推导可以参考附录)，</p>
+<p><span class="math display">\[
+p_t(x)=\frac{1}{2\pi s_t^2}\exp\left(-\frac{(x-\mu_t)^2}{2s_t^2}\right),
+s_t^2:=\frac{\sigma^2}{2\theta}(1-e^{-2\theta t}),\mu_t:=x_0e^{-\theta
+t}
+\]</span></p>
+<p>从这边我们可以看到<span class="math inline">\(p_t(x)\)</span>对应的分布，和上面我们直接求解 SDE
+是一样，是一个均值为<span class="math inline">\(\mu_t\)</span>,标准差为<span class="math inline">\(s_t\)</span>的高斯分布。</p>
+<p>我们通过模拟 OU Process 从<span class="math inline">\(t=0\)</span>到$t=4<span class="math inline">\(50000次，同时记录\)</span>t=0.0,0.5,1.5,4.0$
+四个时间点的取值分布，并且根据 FPE 对应的解析解进行对比： <img src="/2025/06/30/flow/ou_fpe.png" class="" width="400" title="Flow ODE"></p>
+<h3 id="from-sde-to-ode">From SDE to ODE</h3>
+<blockquote>
+<p><strong>From SDE to ODE</strong> 对于一个SDE <span class="math inline">\(dX_t=f(X_t, t)dt+g(X_t,t)dW_t\)</span>,
+我们可以找到一个ODE: <span class="math display">\[dZ_t=F(Z_t,t)dt, \\
+F(z,t):=f(z,t)-\frac{1}{2}\nabla\left(g(z,t)g(z,t)^T\right)-\frac{1}{2}g(z,t)g(z,t)^T\nabla
+\log p_t(z)\]</span> 使得<span class="math inline">\(X_t\)</span>在<span class="math inline">\(t\)</span>时刻的分布<span class="math inline">\(p_t(x)\)</span>和<span class="math inline">\(Z_t\)</span>在<span class="math inline">\(t\)</span>时刻的分布<span class="math inline">\(p_t(z)\)</span>是一样的，如果他们的初始分布一样<span class="math inline">\(X_0\sim p_{init}, Z_0\sim p_{init}\)</span></p>
+</blockquote>
+<p>上面这个方程考虑了比上面参考的 Blog
+更一般的情况，因此多出来了额外的一项<span class="math inline">\(-\frac{1}{2}\nabla\left(g(z,t)g(z,t)^T\right)\)</span></p>
+<p><strong>上面这个定理告诉了我们一个很重要的事情，如果我们可以知道</strong><span class="math inline">\(\nabla \log p_t(x)\)</span>，<strong>那么就可以把
+SDE 转化成 ODE。换句话说，如果我们知道</strong><span class="math inline">\(\nabla\log p_t(x)\)</span><strong>, 那么我们从
+Flow Model 得出来的结论很容易直接推广到 Diffusion Model</strong></p>
+<h3 id="example-3">Example</h3>
+<p>我们仍然以 OU Process 来说明这个过程。</p>
+<p>我们可以根据上面的这个定理知道，OU Process 对应的 ODE
+应该可以写成这种形式：</p>
+<p><span class="math display">\[
+dZ_t=-\theta Z_tdt-\frac{1}{2}\sigma^2\partial_z\log p_t(Z_t)dt
+\]</span></p>
+<p>如果<span class="math inline">\(p_{init}\)</span>是一个高斯分布的话，比如<span class="math inline">\(X_0\sim\mathcal{N}(\mu_0,\sigma_0)\)</span>，我们知道<span class="math inline">\(X_t\)</span>也是服从一个高斯分布：</p>
+<p><span class="math display">\[
+X_t\sim\mathcal{N}(\mu_t,\sigma_t),\mu_t=\mu_0e^{-\theta
+t},\sigma_t^2=\sigma_0^2e^{-2\theta
+t}+\frac{\sigma^2}{2\theta}(1-e^{-2\theta t})
+\]</span></p>
+<p>我们可以知道其对应的 ODE 是：</p>
+<p><span class="math display">\[
+dZ_t = -\theta Z_t dt+\frac{\sigma^2}{2}\frac{Z_t-\mu_t}{\sigma_t^2}dt
+\]</span></p>
+<p>下面是通过一个 Python 程序来描述了这个过程。
+<!-- ![](./flow/sde_ode_animation.mp4) -->
+<!-- <iframe height=498 width=510 src="sde_ode_animation.mp4"> -->
+<video src="sde_ode_animation.mp4" controls="" width="100%">
+您的浏览器不支持 video 标签。 </video></p>
+<h3 id="section-2"></h3>
+<h2 id="reversed-time-sde">Reversed Time SDE</h2>
+<blockquote>
+<p><strong>Reversed Time SDE</strong> 对于一个SDE: <span class="math display">\[dX_t=f(X_t, t)dt+g(X_t,t)dW_t\]</span><span class="math inline">\(t\)</span>从<span class="math inline">\(0\)</span>到<span class="math inline">\(1\)</span>的演化用这个方程描述。那么<span class="math inline">\(\tau:=1-t\)</span>从<span class="math inline">\(1\)</span>到<span class="math inline">\(0\)</span>的演化，则可以用下面的方程描述: <span class="math display">\[d\overleftarrow{X}_{\tau}=\overleftarrow{f}(\overleftarrow{X}_{\tau},\tau)d\tau+g(\overleftarrow{X}_{\tau},\tau)dW_{\tau},\\
+\overleftarrow{f}(x,\tau)=-f(x,t)+\nabla
+(g(x,\tau)g(x,\tau)^T)+g(x,\tau)g(x,\tau)^T\nabla\log
+p_{\tau}(x)\]</span></p>
+</blockquote>
+<p>关于上面的定理的证明，一般都是采用 Kolmogorov Forward Equation 和
+Kolmogorov Backward Equation 去获得<span class="math inline">\(p(x,t|y,s)\)</span>这样的联合分布，然后在求得对应的边际分布。整体正面思路稍显复杂，这边借助
+Fokker-Planck Equation 在附录给出一个稍微简单点的数学证明。</p>
+<h3 id="example-4">Example</h3>
+<p>我们这边仍然以简单的 OU Process 作为例子来阐述上面这个定理。对于 OU
+Process，我们可以知道：</p>
+<p><span class="math display">\[
+\overleftarrow{f}(x,\tau)=\theta x - \sigma^2 \frac{x
+-\mu_{1-\tau}}{\sigma_{1-\tau}^2}
+\]</span></p>
+<p>我们通过一些 Python 代码去可视化，上面这个过程确实是反向过程：</p>
+<img src="/2025/06/30/flow/reversed_time_sde.png" class="" width="400" title="Flow ODE">
+<p>从下面这个分布上看，我们可以明显看到反向过程在<span class="math inline">\(\tau\)</span>时刻的分布和正向过程在 <span class="math inline">\(1-\tau\)</span> 时刻的分布是一样的。</p>
+<p>不过我们注意到一个非常有意思的点，从这张图的上半部分，可以看到反向过程，神奇地重新收敛回<span class="math inline">\(x_0\)</span>，无论是你从怎么样的<span class="math inline">\(x_1\)</span>开始去做这个方向过程。</p>
+<p>我们这边对于此，给出一个比较简单是粗糙的分析，这个现象是如何发生的。我把<span class="math inline">\(\overleftarrow{f}(x,\tau)\)</span>在<span class="math inline">\(\tau=1\)</span>处做展开，其等价于<span class="math inline">\(\overleftarrow{f}(x,t)\)</span> 在<span class="math inline">\(t=0\)</span>处做展开。</p>
+<p><span class="math display">\[
+\overleftarrow{f}(x,t)=\theta x - \frac{2\theta(x-x_0e^{-\theta
+t})}{1-e^{-2\theta t}}\approx \theta x -\frac{2\theta(x-x_0+x_0\theta
+t)}{2\theta t} \sim \frac{x-x_0}{t}
+\]</span></p>
+<p>在<span class="math inline">\(t\sim
+0\)</span>的时候，会有一个无穷大的力，将其拽回<span class="math inline">\(x_0\)</span>.</p>
+<h3 id="section-3"></h3>
+<h1 id="神经网络的引入">神经网络的引入</h1>
+<p>当然在 AIGC 领域，一般不会考虑上面这么复杂的
+SDE，其往往考虑简单的各向同性的
+SDE，后续的讨论，我们也将只讨论下面这张稍微简化点的版本:</p>
+<p><span class="math display">\[
+dX_t=f(X_t,t)dt+\sigma_t dW_t
+\]</span></p>
+<p>当<span class="math inline">\(\sigma_t\equiv 0\)</span>的时候，回退到
+Flow Model.</p>
+<p>有了上面的基础的概念，我们知道了一件事情，如果我们需要给<span class="math inline">\(p_{init}\)</span>和<span class="math inline">\(p_{target}\)</span>这两个分布，找出一个连接的桥梁，那么只需要找出满足一个满足条件的
+ODE(Flow Model)或者 SDE(Diffusion
+Model)。但是比较困难的时候，我们怎么找到这些的 SDE 或者 ODE
+呢？这个时候就神经网络的登场的时候，当我们不知道具体的动力学方程该怎么写的时候，那么就可以使用神经网络代替他，然后找到一个好的
+Loss 去优化。</p>
+<p>第一步，</p>
+<p>既然不知道什么样的<span class="math inline">\(f(X_t,t)\)</span>可以正确连接<span class="math inline">\(p_{init}\)</span>和<span class="math inline">\(p_{target}\)</span>，那么我们就用神经网络代替他，</p>
+<p><span class="math display">\[
+dX_t=f_{\theta}(X_t,t)dt+\sigma_t dW_t
+\]</span></p>
+<p>第二步，我们需要构造怎么样的 Loss 来训练<span class="math inline">\(f_{\theta}(x,t)\)</span>呢。这边很自然地会想到:</p>
+<ul>
+<li>直接找到<span class="math inline">\(f(x,t)\)</span>对应的值<span class="math inline">\(\tilde{f}(x,t)\)</span>，然后使用 MSE Loss
+去拟合:</li>
+</ul>
+<p><span class="math display">\[
+\min_{\theta}\mathbb{E}_{X_t}[\|f_{\theta}(X_t,t)-\tilde{f}(X_t,t)\|^2]
+\]</span></p>
+<h3 id="flow-model-1">Flow Model</h3>
+<p>首先直接想要知道<span class="math inline">\(\tilde{f}(x,t)\)</span>长什么样子是非常困难的，因为不太知道<span class="math inline">\(p_{target}\)</span>（即<span class="math inline">\(p_{data}\)</span>）具体是什么样子。但是如果对于某个样本<span class="math inline">\(z \sim
+p_{data}\)</span>，好在我们是比较容易知道<span class="math inline">\(\tilde{f}(x,t|z)\)</span>是什么样子的。</p>
+<blockquote>
+<p><strong>Gaussian Probability Path</strong>
+具体个简单的例子，假设初始分布是一个高斯分布并且<span class="math inline">\(\sigma_t=0\)</span>，我们可以假设分布函数<span class="math inline">\(p_t(x|z)\)</span>由下面的形式给出来： <span class="math display">\[x_t=\alpha_t z + \beta_t \epsilon, \epsilon \sim
+\mathcal{N}(0,I_d), \\\alpha_0:=0,\alpha_1:=1,\beta_0:=1,\beta_1:=0\\
+x_t \sim p_t(x|z)\]</span> 很显然上面这个过程满足<span class="math inline">\(p_0(x|z)=\mathcal{N}(0,I_d),p_1(x|z)=\delta(x-z)\)</span>,
+那么： <span class="math display">\[p_0(x)=\int
+p_{data}(z)\mathcal{N}(0,I_d)dz = \mathcal{N}(0,I_d),\\
+p_1(x)=\int p_{data}(z)\delta(x-z)dz = p_{data}(x)\]</span>
+因此这是一个合理的构造。 那么对于这样的构造，它对应的<span class="math inline">\(\tilde{f}(x,t|z)\)</span>长什么样子呢。那么只需要简单将上面的过程带入ODE,
+<span class="math display">\[\tilde{f}(x_t,t|z)=\frac{dx_t}{dt}=\dot{\alpha_t}z+\dot{\beta_t}\epsilon\]</span>
+那么找出函数<span class="math inline">\(\tilde{f}\)</span>满足上述的方程，那么我们知道<span class="math inline">\(x_t=\alpha_t z+\beta_t \epsilon\)</span>,
+经过简单的调整我们就知道： <span class="math display">\[\tilde{f}(x_t,t|z)=\dot{\alpha_t}z+\dot{\beta_t}\epsilon=\dot{\alpha_t}z+\dot{\beta_t}\frac{x_t-\alpha_t
+z}{\beta_t}=(\dot{\alpha_t}-\frac{\dot{\beta_t}}{\beta_t}\alpha_t)z+\frac{\dot{\beta_t}}{\beta_t}x_t\]</span></p>
+</blockquote>
+<p>那么当我们有了<span class="math inline">\(\tilde{f}(x,t|z)\)</span>，我们才能知道<span class="math inline">\(f(x,t)\)</span>呢？这个时候 Fokker-Planck
+就可以派上用场了。我们知道<span class="math inline">\(f(x,t)\)</span>，需要满足下面的方程:</p>
+<p><span class="math display">\[
+\frac{dp_t(x)}{dt}=-\nabla\cdot(\tilde{f}(x,t)p_t(x))
+\]</span></p>
+<p>而方程左边可以写成</p>
+<p><span class="math display">\[
+\frac{dp_t(x)}{dt}=\int \frac{dp_t(x|z)}{dt}p_{data}(z)dz \\
+= -\int \nabla \cdot (p_t(x|z)\tilde{f}(x,t|z))p_{data}(z)dz \\
+= -\nabla \cdot \int p_t(x)
+\frac{p_t(x|z)}{p_t(x)}\tilde{f}(x,t|z)p_{data}(z)dz
+\]</span></p>
+<p>对比这两个方程，我们就可以知道：</p>
+<p><span class="math display">\[
+\tilde{f}(x,t)=\int \tilde{f}(x,t|z)\frac{p_t(x|z)}{p_t(x)}p_{data}(z)dz
+\]</span></p>
+<p>因此，对应的 Loss 可以写作如下的形式：</p>
+<p><span class="math display">\[
+\mathcal{L}=\mathbb{E}_{t,x\sim
+p_t(x)}\left[\left(f_{\theta}(x,t)-\tilde{f}(x,t)\right)^2\right]
+\]</span></p>
+<p>但是上面这个 Loss，实际上不太可以使用，因为<span class="math inline">\(\tilde{f}(x,t)\)</span>需要我们对<span class="math inline">\(p_{data}(z)\)</span>这个实际我们不知道的分布进行积分。因此在实际操作的过程中，我们往往对数据进行采样，去近似这个积分：</p>
+<p><span class="math display">\[
+\mathcal{L}_{cond}=\mathbb{E}_{t,z\sim p_{data}, x\sim
+p_t(x|z)}\left[\left(f_{\theta}(x,t)-\tilde{f}(x,t|z)\right)^2\right]
+\]</span></p>
+<h3 id="diffusion-model-1">Diffusion Model</h3>
+<p>那么根据 <a href="https://i0imzi7wrro.feishu.cn/docx/XwWvdDoEroTVWEx5u3rc6uukndc#share-QCMsdYCl7ouEcpx0R5ocP8k6nwc" target="_blank" rel="noopener">Flow
+and Diffusion Models</a>，我们直接将 Flow Model 和 Diffusion Model
+连接起来。如果我们的目标是找到一个 SDE<span class="math inline">\(dX_t=F(X_t,t)dt+\sigma_tdW_t\)</span>，使得其在<span class="math inline">\(t\)</span>时刻的概率分布为<span class="math inline">\(p_t(x)\)</span>那么可以知道：</p>
+<p><span class="math display">\[
+F(x,t)=f(x,t)+\frac{1}{2}\sigma_t^2\nabla \log p_t(x)
+\]</span></p>
+<p>对于<span class="math inline">\(f(x,t)\)</span>相关的 Loss 则是和上面
+Flow Model 是一样的。那么我们只需要另外一个神经网络<span class="math inline">\(s_{\theta}(x,t)\)</span>去拟合<span class="math inline">\(\nabla
+p_t(x)\)</span>。类似上面的推导，我们可以条件 Loss：</p>
+<p><span class="math display">\[
+\mathcal{L}_{cond}^{score}=\mathbb{E}_{t,z\sim p_{data}, x\sim
+p_t(x|z)}\left[\left(s_{\theta}(x,t)-\nabla \log p_t(x)\right)^2\right]
+\]</span></p>
+<blockquote>
+<p><strong>Gaussian Probability Path训练过程</strong>
+对于GPP这种过程，我们可以知道： <span class="math display">\[\mathcal{L}_{cond}=\mathbb{E}_{t,z\sim p_{data},
+x\sim
+p_t(x|z)}\left[\left\|f_{\theta}(x,t)-(\dot{\alpha_t}-\frac{\dot{\beta_t}}{\beta_t}\alpha_t)z-\frac{\dot{\beta_t}}{\beta_t}x\right\|^2\right]
+\\
+\mathcal{L}_{cond}^{score}=\mathbb{E}_{t,z\sim p_{data}, x\sim
+p_t(x|z)}\left[\left\|s_{\theta}(x,t)+\frac{x-\alpha_t
+z}{\beta_t^2}\right\|^2\right]\]</span>
+关于上面这个Loss，我们可以换两个角度去看待。
+第一，我们可以从噪声的角度去看，<span class="math inline">\(x \sim
+p_t(x|z)\)</span>，<span class="math inline">\(x\)</span>从这个分布里面去采样，真正决定<span class="math inline">\(x\)</span>值的其实就是高斯造成<span class="math inline">\(\epsilon\)</span>通过<span class="math inline">\(x_t=\alpha_t z+\beta_t
+\epsilon\)</span>，那么我们可以将上面的Loss重新表示成: <span class="math display">\[\mathcal{L}_{cond}^{score}=\mathbb{E}_{t,z\sim
+p_{data},\epsilon \sim
+\mathcal{N}(0,I_d)}\left[\left\|s_{\theta}(x,t)+\frac{\epsilon}{\beta_t}\right\|^2\right]\]</span>
+而传统Diffusion Model的Loss，常常写成如下的形式： <span class="math display">\[\mathcal{L}_{SD}=\mathbb{E}_{t,z,\epsilon}\left[\left\|\epsilon_{\theta}(x_t,t)-\epsilon\right\|^2\right]\]</span>
+<strong>这边我们就可以看出来：Score Matching和Diffusion
+Model原本使用variational lower bound这种近似方法，殊途同归了。</strong>
+第二，观察到对于GPP来说, <span class="math display">\[(\dot{\alpha_t}-\frac{\dot{\beta_t}}{\beta_t}\alpha_t)z+\frac{\dot{\beta_t}}{\beta_t}x_t=\dot{\alpha_t}z+\dot{\beta_t}\epsilon=\frac{\dot{\alpha_t}}{\alpha_t}x_t-(\frac{\dot{\alpha_t}}{\alpha_t}\beta_t-\dot{\beta_t})\epsilon\]</span>
+那么，这个是如果我们训练出来了一个很好的score function,<span class="math inline">\(s_{\theta}(x,t)\)</span>可以很好拟合<span class="math inline">\(\epsilon\)</span>,那么我们不再需要训练额外的<span class="math inline">\(f_{\theta}(x,t)\)</span>。
+<strong>换句话说：对于GPP来说，只需要做Score matching，训练<span class="math inline">\(s_{\theta}(x,t)\)</span>就足够了。</strong></p>
+</blockquote>
+<h1 id="离散时间的-diffusion-model">离散时间的 Diffusion Model</h1>
+<h2 id="ddpm-简介">DDPM 简介</h2>
+<p>在 Diffusion Model 刚刚在 AIGC
+领域兴起的时候，整体的描述语言，并不是上面这样。而是以离散时间的布朗运动来描述，整个过程分为：</p>
+<ul>
+<li>Forward Diffusion Process（前向过程）</li>
+<li>Reverse Diffusion Process （逆向过程）</li>
+</ul>
+<p>具体的描述可以参考下面这个非常好的 Blog：<a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/" target="_blank" rel="noopener">https://lilianweng.github.io/posts/2021-07-11-diffusion-models/</a></p>
+<p>我们这边只陈列一些 Notation 和重要的结论。</p>
+<h3 id="forward-diffusion-process">Forward Diffusion Process</h3>
+<p><span class="math display">\[
+x_0\to x_1 \to x_2 \to \cdots x_N \to \cdots
+\]</span></p>
+<p>每一步使用一个 Gaussian 随机变量去加噪:</p>
+<p><span class="math display">\[
+x_n=\sqrt{\alpha_n}x_{n-1}+\sqrt{1-\alpha_n}\epsilon;x_0 \sim
+p_{data},x_{+\infty}\sim \mathcal{N}(0,I_d)
+\]</span></p>
+<p>这边我们全部使用<span class="math inline">\(n\)</span>代替，因为整个过程是离散的。同时利用
+Gaussian 分布的关系，<span class="math inline">\(x_n,x_0\)</span>之间的关系可以表示为:</p>
+<p><span class="math display">\[
+x_n=\sqrt{\bar{\alpha}_n}x_0+\sqrt{1-\bar{\alpha}_n}\epsilon,
+\bar{\alpha}_n=\prod_{i=1}^n\alpha_i
+\]</span></p>
+<h3 id="reverse-diffusion-process">Reverse Diffusion Process</h3>
+<p><span class="math display">\[
+\cdots \to x_N \to x_{N-1} \to \cdots x_1 \to x_0
+\]</span></p>
+<p>在给定<span class="math inline">\(x_0\)</span>的时候，可以得到逆向的条件分布:</p>
+<p><span class="math display">\[
+p(x_{n-1}|x_n,x_0) \sim
+\mathcal{N}(\tilde{\mu}(x_n,x_0),\tilde{\sigma}_n I_d),\\
+\tilde{\mu}(x_n,
+x_0)=\frac{\sqrt{\alpha_n}(1-\bar{\alpha}_{n-1})}{1-\bar{\alpha}_n}x_n+\frac{\sqrt{\bar{\alpha}_{n-1}}\beta_n}{1-\bar{\alpha}_n}x_0=\frac{1}{\sqrt{\alpha_n}}\left(x_n-\frac{1-\alpha_n}{\sqrt{1-\bar{\alpha}_n}}\epsilon\right),\\
+\tilde{\sigma}_n=\frac{1-\bar{\alpha}_{n-1}}{1-\bar{\alpha}_n}\beta_n
+\]</span></p>
+<h3 id="损失函数">损失函数</h3>
+<p>简化过后的损失函数</p>
+<p><span class="math display">\[
+\mathcal{L}_{simple}=\mathbb{E}_{n,x_0,\epsilon_n}\left[\left\|\epsilon_{\theta}(\sqrt{\bar{\alpha}_n}x_0+\sqrt{1-\bar{\alpha}_n}\epsilon_n,
+n)-\epsilon_n\right\|^2\right]
+\]</span></p>
+<h2 id="ddim">DDIM</h2>
+<h3 id="ddim-的进步之处">DDIM 的进步之处</h3>
+<p>当然 DDPM 整个过程，最核心的点是，给定一个<span class="math inline">\(n\)</span>，那么随机变脸<span class="math inline">\(X_n\)</span>需要满足如下的分布：</p>
+<p><span class="math display">\[
+x_n\sim\mathcal{N}(\sqrt{\bar{\alpha}_n}x_0,\sqrt{1-\bar{\alpha}_n}I_d)
+\]</span></p>
+<p>在 DDPM
+中整个过程都是马尔可夫的。但是实际上，如果只是满足上面这个分布的话，那整个过程不一定需要马尔可夫的。可以证明的是，如果</p>
+<p><span class="math display">\[
+p(x_{n-1}|x_n,x_0)=\mathcal{N}\left(\sqrt{\bar{\alpha}_{n-1}}x_0+\sqrt{1-\bar{\alpha}_{n-1}-\sigma_n}\frac{x_n-\sqrt{\bar{\alpha}_n}x_0}{\sqrt{1-\bar{\alpha}_n}},&nbsp;\sigma_nI_d\right)
+\]</span></p>
+<p>那么上面的过程分布就能被满足。</p>
+<p>第一，我们可以看到如果<span class="math inline">\({\sigma}_n=\frac{1-\bar{\alpha}_{n-1}}{1-\bar{\alpha}_n}\beta_n\)</span>，那么这个表达式则回退到
+DDPM 的情况。</p>
+<p>第二，如果我们令<span class="math inline">\(\sigma_n\equiv0\)</span>，那么，</p>
+<p><span class="math display">\[
+p(x_{n-1}|x_n,x_0)=\delta_{x_{n-1}}\left(\sqrt{\bar{\alpha}_{n-1}}x_0+\sqrt{1-\bar{\alpha}_{n-1}}\frac{x_n-\sqrt{\bar{\alpha}_n}x_0}{\sqrt{1-\bar{\alpha}_n}}\right)=\delta_{x_{n-1}}\left(\sqrt{\bar{\alpha}_{n-1}}x_0+\sqrt{1-\bar{\alpha}_{n-1}}\epsilon\right)
+\]</span></p>
+<p>变成了一个确定性的过程。</p>
+<p>第三，同时生成的过程中，我们需要注意到一件非常好的事情。加入我们已经训练好了<span class="math inline">\(\epsilon_{\theta}\)</span>，我们不需要像 DDPM
+那样，先从 Gaussion 中采样一个<span class="math inline">\(x_N\)</span>然后一步一步的使用<span class="math inline">\(\epsilon_{\theta}(x_n,n)\)</span>去去除噪声。而是可以根据上看这个表达式去优化生成的过程，因为我们核心关心的只是<span class="math inline">\(p(x_{n-1}|x_n,x_0)\)</span>这个边际分布。首先我们发现要确定<span class="math inline">\(x_{n-1}\)</span>,不仅要知道<span class="math inline">\(x_n\)</span>，还要知道<span class="math inline">\(x_0\)</span>，但是在生成过程中，我们是不知道<span class="math inline">\(x_0\)</span>是多少的，因此最简单的一个原则，是使用估计的<span class="math inline">\(\hat{x}_0\)</span>去代替上面公式的<span class="math inline">\(x_0\)</span>，因此：</p>
+<p><span class="math display">\[
+x_{n-1}=\sqrt{\bar{\alpha}_{n-1}}\hat{x}_0+\sqrt{1-\bar{\alpha}_{n-1}-\sigma_n}\epsilon_{\theta}(x_{n},n)+\sigma_n\epsilon,\\
+\hat{x}_0=\frac{x_n-\sqrt{1-\bar{\alpha}_n}\epsilon_{\theta}(x_n,n)}{\sqrt{\bar{\alpha}_n}}
+\]</span></p>
+<h2 id="与-flow-model-的联系">与 Flow Model 的联系</h2>
+<h3 id="ddpm">DDPM</h3>
+<p>首先我们先分析一下 DDPM，对于 DDPM 来说，他的 Forward Process 为:</p>
+<p><span class="math display">\[
+x_n=\sqrt{\alpha_n}x_{n-1}+\sqrt{1-\alpha_n}\epsilon;x_0 \sim
+p_{data},x_{+\infty}\sim \mathcal{N}(0,I_d)
+\]</span></p>
+<p>那么对于一个固定的<span class="math inline">\(N\)</span>，我们可以令<span class="math inline">\(t_n=\frac{n}{N},\Delta
+t=\frac{1}{N}\)</span>，将上面的方程 rescale 到<span class="math inline">\([0,1]\)</span>，因此：</p>
+<p><span class="math display">\[
+x_{t+\Delta t}=\sqrt{\frac{\bar{\alpha}_{t+\Delta
+t}}{\bar{\alpha}_t}}x_t+\sqrt{1-\frac{\bar{\alpha}_{t+\Delta
+t}}{\bar{\alpha}_t}}\epsilon
+\]</span></p>
+<p>对上面的式子，做展开，保留到 <span class="math inline">\(\Delta
+t\)</span>，我们可以得到:</p>
+<p><span class="math display">\[
+dx_t=\frac{1}{2}\frac{\dot{\bar{\alpha}_t}}{\bar{\alpha}_t}x_t+\sqrt{-\frac{\dot{\bar{\alpha}_t}}{\bar{\alpha}_t}dt}\epsilon
+\]</span></p>
+<p>这边我知道 <span class="math inline">\(\bar{\alpha}_t\)</span>
+是随着时间单调递减，因此 <span class="math inline">\(\dot{\bar{\alpha}}_t&lt;0\)</span>。当然为了保持和
+Paper 里面的一致，如果我们定义:<span class="math inline">\(\beta_t=-\frac{d}{dt}\log\bar{\alpha}_t\)</span>，那么我们就可以得到比较熟悉的
+Foward Process 对应的 SDE:</p>
+<p><span class="math display">\[
+dX_t=-\frac{1}{2} \beta_t X_t dt+\sqrt{\beta_t}dW_t
+\]</span></p>
+<p>其对应的 Reversed Time SDE 则可以写成:</p>
+<p><span class="math display">\[
+d\overleftarrow{X}_{\tau}=\left(\frac{1}{2}\beta_{\tau}\overleftarrow{X}_{\tau}+\beta_{\tau}\nabla
+\log
+p_{\tau}(\overleftarrow{X}_{\tau})\right)d\tau+\sqrt{\beta_{\tau}}dW_{\tau}
+\]</span></p>
+<p>或者：</p>
+<p><span class="math display">\[
+d\overleftarrow{X}_{t}=-\left(\frac{1}{2}\beta_{t}\overleftarrow{X}_{t}+\beta_{t}\nabla
+\log
+p_{t}(\overleftarrow{X}_{t})\right)dt+\sqrt{\beta_{t}}d\overleftarrow{W}_{t}
+\]</span></p>
+<p>根据 Fokker-Planck Equation，我们知道这个 SDE 对应的
+ODE，可以写成:</p>
+<p><span class="math display">\[
+d\overleftarrow{X}_{t}=-\frac{1}{2}{\beta}_{t}\overleftarrow{X}_{t}dt-\frac{1}{2}{\beta}_{t}\nabla
+\log p_{t}(\overleftarrow{X}_{t})dt
+\]</span></p>
+<p>因此这个会是上面 Diffusion Model 的一种特殊的情况。</p>
+<h3 id="ddim-1">DDIM</h3>
+<p>另外对于 DDIM，从直觉上看起来，如果<span class="math inline">\(\sigma_n\equiv&nbsp;0\)</span>，上面整个生成过程也是一个确定性的过程。而我们之前介绍的
+Flow Model 也是确定性的，那么这两个在本质上是不是同一个事情呢。</p>
+<p>根据上面的手法，我们可以直接将，DDIM 的生成离散化，得到一个 SDE。</p>
+<p>其离散的方程为:</p>
+<p><span class="math display">\[
+x_{n-1}=\sqrt{\bar{\alpha}_{n-1}}\frac{x_n-\sqrt{1-\bar{\alpha}_n}\epsilon_{\theta}(x_n,n)}{\sqrt{\bar{\alpha}_n}}+\sqrt{1-\bar{\alpha}_{n-1}}\epsilon_{\theta}(x_{n},n)
+\]</span></p>
+<p>对应的连续展开为:</p>
+<p><span class="math display">\[
+x_{t-dt}=\sqrt{\frac{\bar{\alpha}_{t-dt}}{\bar{\alpha}_t}}\left(x_t-\sqrt{1-\bar{\alpha}_t}\epsilon_{\theta}\right)+\sqrt{1-\bar{\alpha}_{t-dt}}\epsilon_\theta&nbsp;\\
+=&nbsp;(1-\frac{1}{2}\frac{\dot{\bar{\alpha}_t}}{\alpha_t}dt)x_t-d\sqrt{1-\bar{\alpha}_t}\epsilon_{\theta}+\frac{1}{2}\frac{\dot{\bar{\alpha}_t}}{\alpha_t}dt\sqrt{1-\bar{\alpha}_t}\epsilon_{\theta}
+\]</span></p>
+<p>当然，我们利用<span class="math inline">\(\frac{d}{dt}\sqrt{1-\bar{\alpha}_t}=\frac{\dot{\bar{\alpha}}_t}{2\sqrt{1-\bar{\alpha}}_t}\)</span>,我们最终可以得到:</p>
+<p><span class="math display">\[
+dX_t=\frac{1}{2}\frac{\dot{\bar{\alpha}}_t}{\bar{\alpha}_t}X_tdt-\frac{1}{2}\frac{\dot{\bar{\alpha}}_t}{\sqrt{1-\bar{\alpha}_t}\bar{\alpha}_t}\epsilon_{\theta}
+\]</span></p>
+<p>使用上面的符号:</p>
+<p><span class="math display">\[
+d\overleftarrow{X}_t=-\frac{1}{2}\beta_t\overleftarrow{X}_tdt+\frac{1}{2}\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_{\theta}(\overleftarrow{X}_t)
+\]</span></p>
+<p>那么对比一下，<strong>我们就知道 DDIM 的</strong><span class="math inline">\(\epsilon_{\theta}\)</span><strong>只需要拟合</strong><span class="math inline">\(-\frac{\nabla \log
+p_t(x)}{\sqrt{1-\alpha_t}}\)</span><strong>，那么整个过程就是 DDPM
+没有什么特别的区别，至少就整体的分布情况来说。而且事实上，对于 GPP
+来说，神经网络就是在拟合整个 score function.</strong></p>
+<h1 id="conditional-generation">Conditional Generation</h1>
+<p>上面我们主要讨论的还是，如果去构建<span class="math inline">\(p_{init}\)</span>到<span class="math inline">\(p_{target}\)</span>之间的映射，这样通过对于<span class="math inline">\(p_{init}\)</span>进行采用，达到在<span class="math inline">\(p_{target}\)</span>里面采样的效果，即所谓的生成。但是在现实中，我们应用的时候，我们都是输入一个
+prompt 或者某种条件，以此保证 AI
+可以生成符合要求的图像、视频，而不是直接从全集中采样一个图像或视频。</p>
+<p>那么上面的训练过程则可以变成:</p>
+<ul>
+<li>输入某一个 prompt 或者条件<span class="math inline">\(c\)</span></li>
+<li>根据对应的条件<span class="math inline">\(c\)</span>，去采样一个真实的样本<span class="math inline">\(z_c\)</span></li>
+<li>使用神经网络<span class="math inline">\(f_{\theta}(x|c)\)</span>去拟合<span class="math inline">\(\tilde{f}(x|z_c)\)</span></li>
+</ul>
+<p>那么这边我们就会发现一件比较重要的事情，我们可以通过控制<span class="math inline">\(c\)</span>的采样，去控制<span class="math inline">\(z_c\)</span>的采样结果，这样我们就可以影响最终的训练效果。因此，我们需要对上面的过程做一个拆解，拆解成两部分，一部分完全不受<span class="math inline">\(c\)</span>采样算法的影响，一部分可以<span class="math inline">\(c\)</span>的采样算法进行调控。</p>
+<p>对于 GPP 来说，我们知道<span class="math inline">\(f_{\theta}(x|c)\)</span>拟合的目标是<span class="math inline">\(\frac{\dot{\beta}_t}{\beta_t}x_t+(\dot{\alpha_t-\frac{\dot{\beta}_t}{\beta_t}\alpha_t})z_c\)</span>，我们可以经过一些变化，把这个重新写成：</p>
+<p><span class="math display">\[
+f_{\theta}(x|c) \to \frac{\dot{\alpha}_t}{\alpha_t}x +
+\frac{\dot{\alpha}_t\beta_t^2-\dot{\beta}_t\beta_t\alpha_t}{\alpha_t}\nabla
+\log p_t(x|z_c):=A_tx+B_t\nabla\log p_t(x|z_c)
+\]</span></p>
+<p>我们还有：</p>
+<p><span class="math display">\[
+\nabla\log p_t(x|z_c)=\nabla\log \frac{p(z_c|x)p(x)}{p(z_c)}=\nabla\log
+p(x)+\nabla \log p(z_c|x)
+\]</span></p>
+<p>这是因为<span class="math inline">\(\nabla p(z_c)=0\)</span>。</p>
+<p>因此,</p>
+<p><span class="math display">\[
+f_{\theta}(x|c)\to A_tx+B_t\nabla\log p(x)+B_t\nabla\log
+p(z_c|x)=\tilde{f}(x,t)+B_t\nabla\log p(z_c|x)
+\]</span></p>
+<p>从上面这个结果，我们可以看到：</p>
+<ul>
+<li>第一步是全局的速度场和你的采样没有关系</li>
+<li>第二步则是类似一个分类或者 image caption 的任务</li>
+</ul>
+<p>因此对于<span class="math inline">\(c\)</span>采样算法对最终结果的影响，主要由第二部分造成。因此，可以我们可以通过一个超参数<span class="math inline">\(\lambda\)</span>来控制这部分的影响。</p>
+<p><span class="math display">\[
+f_{\theta}(x|c)\to \tilde{f}(x,t)+\lambda B_t\nabla\log p(z_c|x) =
+\tilde{f}(x,t)+\lambda B_t(\nabla \log p(x|z_c) -\nabla\log p(x))\\
+f_{\theta}(x|c) \to (1-\lambda)\tilde{f}(x,t)+\lambda\tilde{f}(x,t|z_c)
+\]</span></p>
+<p>第一部分则是上面没有条件的拟合目标，第二部分则是有条件的拟合目标。当然我们不需要训练两个网络分别拟合，而是直接增加一个<span class="math inline">\(\empty\)</span>来代表第一部分。因此最终的完整算法，可以用下面的过程来描述：</p>
+<blockquote>
+<p><strong>Classifier-free guidance CFM(CFG-CFM)</strong> -
+<strong>训练</strong>： - 从<span class="math inline">\(p_{data}\)</span>采样一组<span class="math inline">\((z_c,c)\)</span> - <span class="math inline">\(t\sim Uniform[0,1]\)</span> - <span class="math inline">\(x \sim p_t(x|z_c)\)</span> - 以<span class="math inline">\(p_{drop}\)</span><span class="math inline">\(丢弃掉条件\)</span><span class="math inline">\(c\)</span><span class="math inline">\(,即\)</span><span class="math inline">\(c=\empty\)</span> - <span class="math inline">\(\min_{\theta}\|f_{\theta}(x,t|c)-\tilde{f}(x|z_c)\|^2\)</span>
+- <strong>部署</strong>： - 给出一个条件<span class="math inline">\(c\)</span> - <span class="math inline">\(x_0\sim
+p_{init}\)</span> - 使用PDE数值方法求解<span class="math inline">\(dX_t=f_{\theta}(x,t|c)dt\)</span> - 得到<span class="math inline">\(x_1\)</span></p>
+</blockquote>
+<h1 id="附录">附录</h1>
+<h2 id="reversed-time-sde-证明">Reversed Time SDE 证明</h2>
+<p>对于一个 SDE:<span class="math inline">\(dX_t=f(X_t,t)dX_t+g(X_t,t)dW_t\)</span>其对应的
+Fokker-Planck Equation 是如下的形式：</p>
+<p><span class="math display">\[
+\frac{dp_t(x)}{dt}=-\nabla\cdot(f(x,t)p_t(x))+\frac{1}{2}\nabla^2\cdot(g(x,t)g(x,t)^Tp_t(x))
+\]</span></p>
+<p>如果我们单纯地想知道，对应地 Reversed Time SDE
+长什么样子，我们可以使用简单地换元<span class="math inline">\(\tau=1-t\)</span>，得到：</p>
+<p><span class="math display">\[
+\frac{dp_{\tau}(x)}{d\tau}=-\frac{dp_t(x)}{dt}=\nabla\cdot(f(x,\tau)p_{\tau}(x))-\frac{1}{2}\nabla^2\cdot(g(x,\tau)g(x,\tau)^Tp_{\tau}(x))
+\]</span></p>
+<p>根据简单地向量求导法则:</p>
+<p><span class="math display">\[
+\nabla^2\left(gg^Tp\right)=\nabla\cdot\left(\nabla(gg^Tp)\right)=\nabla\cdot\left(p\nabla(gg^T)+gg^T\nabla
+p\right)=\nabla\cdot \left[p\left(\nabla(gg^T)+gg^T\nabla \log
+p\right)\right]
+\]</span></p>
+<p>那么根据 Fokker-Planck Equation 我们可以知道下面这个
+ODE，可以用来描述 Reversed Time SDE:</p>
+<p><span class="math display">\[
+d\overleftarrow{X}_{\tau}=\left(-f(\overleftarrow{X}_{\tau},\tau)+\frac{1}{2}\nabla
+g(\overleftarrow{X}_{\tau},\tau)g(\overleftarrow{X}_{\tau},\tau)^T+\frac{1}{2}g(\overleftarrow{X}_\tau,\tau)g(\overleftarrow{X}_{\tau},\tau)^T\nabla\log
+p_{\tau}(X_{\tau})\right)
+\]</span></p>
+<p>当然，同时根据 SDE 和 ODE 的关系 <a href="https://i0imzi7wrro.feishu.cn/docx/XwWvdDoEroTVWEx5u3rc6uukndc#share-OR6ldY1gGoB82JxFlW4cutubnqd" target="_blank" rel="noopener">Flow
+and Diffusion Models</a>，如果我们增加一个随机项<span class="math inline">\(gdW\)</span>,那么我们需要在 shift 中补入:<span class="math inline">\(\frac{1}{2}\nabla(gg^T)+\frac{1}{2}gg^t\nabla \log
+p\)</span></p>
+<p>因此完整的 Reversed Time SDE 可以写成下面的形式:</p>
+<p><span class="math display">\[
+d\overleftarrow{X}_{\tau}=\overleftarrow{f}(\overleftarrow{X}_{\tau},\tau)d\tau+g(\overleftarrow{X}_{\tau},\tau)dW_{\tau},\\
+\overleftarrow{f}(x,\tau)=-f(x,t)+\nabla
+(g(x,\tau)g(x,\tau)^T)+g(x,\tau)g(x,\tau)^T\nabla\log p_{\tau}(x)
+\]</span></p>
+<h2 id="ou-process-对应的-fpe-的解">OU Process 对应的 FPE 的解</h2>
+<p>对于偏微分方程：</p>
+<p><span class="math display">\[
+\partial_t
+p_t(x)=\theta\partial_x(xp_t(x))+\frac{1}{2}\sigma^2\partial_x^2p_t(x)
+\]</span></p>
+<p>该 PDE
+设计到对于空间的二阶导数，一般习惯上会使用傅里叶变换，将其转化成代数方程，那么我们可以定义</p>
+<p><span class="math display">\[
+\tilde{p}_t(w):=\mathcal{F}[p_t(x)]:=\frac{1}{\sqrt{2\pi}}\int
+p_t(x)e^{-iwx}dx
+\]</span></p>
+<p>根据傅里叶变换的基本性质：</p>
+<p><span class="math display">\[
+\mathcal{F}[xp_t(x)]=i\partial_w
+\tilde{p}_t(w),\mathcal{F}[\partial_x^2p_t(x)]=-w^2\tilde{p}_t(w)
+\]</span></p>
+<p>变换之后的 PDE，变成了：</p>
+<p><span class="math display">\[
+\partial_t\tilde{p}_t(w)=-\theta
+w\partial_w\tilde{p}_t(w)-\frac{1}{2}\sigma^2w^2\tilde{p}_t(w)
+\]</span></p>
+<p>该方程为一阶 PDE，因此我们可以使用传统的达朗贝尔方法求解：</p>
+<p><span class="math display">\[
+\frac{dt}{1}=\frac{dw}{\theta
+w}=-2\frac{d\tilde{p}}{\sigma^2w^2\tilde{p}}
+\]</span></p>
+<p>从左边一半，可以得到<span class="math inline">\(w=C_1e^{\theta
+t}\)</span>，从右边一半可以得到<span class="math inline">\(\tilde{p}=C_2e^{-\frac{\sigma^2}{4\theta}w^2}\)</span>。因此我们可以得到，一个通用的解:</p>
+<p><span class="math display">\[
+\tilde{p}_t(w)=e^{-\frac{\sigma^2w^2}{4\theta}}F(we^{-\theta t})
+\]</span></p>
+<p>下面我们就需要根据边界条件去确认<span class="math inline">\(F\)</span>的形式。</p>
+<p>如果假设我们的初始分布为<span class="math inline">\(p_0(x)=\delta(x-x_0)\)</span>，那么我们可以知道<span class="math inline">\(\tilde{p}_0(w)=\frac{1}{\sqrt{2\pi}}e^{-iwx_0}\)</span></p>
+<p>那么我们有:</p>
+<p><span class="math display">\[
+F(w)=\frac{1}{\sqrt{2\pi}}e^{-iwx_0}e^{\frac{\sigma^2w^2}{4\theta}}
+\]</span></p>
+<p>因此，我们有：</p>
+<p><span class="math display">\[
+\tilde{p}_t(w)=\frac{1}{\sqrt{2\pi}}\exp\left(-\frac{\sigma^2w^2}{4\theta}(1-e^{-2\theta
+t})\right)\exp\left(-iwe^{-\theta t}x_0\right)
+\]</span></p>
+<p>根据傅里叶逆变换，我们可以知道：</p>
+<p><span class="math display">\[
+p_t(x)=\frac{1}{\sqrt{2\pi}}\int \tilde{p}_t(w)e^{iwx}dw
+\]</span></p>
+<p>同时根据积分恒等式(通过简单的配方即可得到)：</p>
+<p><span class="math display">\[
+\int e^{-Aw^2}e^{iBw}dw = \sqrt{\frac{\pi}{A}}e^{-\frac{B^2}{4A}}
+\]</span></p>
+<p>因此,</p>
+<p><span class="math display">\[
+p_t(w)=\frac{1}{2\pi}\int
+\exp\left(-\frac{\sigma^2w^2}{4\theta}(1-e^{-2\theta
+t})\right)\exp\left(-iwe^{-\theta t}x_0\right)e^{iwx}dw
+\]</span></p>
+<p>那么我们可以令：</p>
+<p><span class="math display">\[
+A=\frac{\sigma^2}{4\theta}(1-e^{-2\theta t}),\\
+B = x-e^{-\theta t}x_0
+\]</span></p>
+<p>那么,</p>
+<p><span class="math display">\[
+p_t(w)=\frac{1}{2\pi}\sqrt{\frac{\pi}{A}}e^{-\frac{B^2}{4A}}=\frac{1}{\sqrt{2\pi2A}}e^{\frac{B^2}{2\times
+2A}}
+\]</span></p>
+<p>我们可以知道<span class="math inline">\(p_t(w)\)</span>构成了一个，均值为<span class="math inline">\(e^{-\theta t}x_0\)</span>，方差为<span class="math inline">\(\frac{\sigma^2}{2\theta}(1-e^{-2\theta
+t})\)</span> 的高斯分布。</p>
+<h1 id="参考文献">参考文献</h1>
+<p>Ho, Jonathan, and Tim Salimans. “Classifier-Free Diffusion Guidance.”
+arXiv, July 25, 2022. <a href="http://arxiv.org/abs/2207.12598" target="_blank" rel="noopener">http://arxiv.org/abs/2207.12598</a>.</p>
+<p>Lipman, Yaron, Ricky T. Q. Chen, Heli Ben-Hamu, Maximilian Nickel,
+and Matt Le. “Flow Matching for Generative Modeling.” arXiv, February 8,
+2023. <a href="https://doi.org/10.48550/arXiv.2210.02747" target="_blank" rel="noopener">https://doi.org/10.48550/arXiv.2210.02747</a>.</p>
+<p>Liu, Xingchao, Chengyue Gong, and Qiang Liu. “Flow Straight and Fast:
+Learning to Generate and Transfer Data with Rectified Flow.” arXiv,
+September 7, 2022. <a href="http://arxiv.org/abs/2209.03003" target="_blank" rel="noopener">http://arxiv.org/abs/2209.03003</a>.</p>
+<p>Song, Jiaming, Chenlin Meng, and Stefano Ermon. “Denoising Diffusion
+Implicit Models.” arXiv, October 5, 2022. <a href="http://arxiv.org/abs/2010.02502" target="_blank" rel="noopener">http://arxiv.org/abs/2010.02502</a>.</p>
+<p>Song, Yang, Jascha Sohl-Dickstein, Diederik P. Kingma, Abhishek
+Kumar, Stefano Ermon, and Ben Poole. “Score-Based Generative Modeling
+through Stochastic Differential Equations.” arXiv, February 10, 2021. <a href="https://doi.org/10.48550/arXiv.2011.13456" target="_blank" rel="noopener">https://doi.org/10.48550/arXiv.2011.13456</a>.</p>
+<p>Strümke, Inga, and Helge Langseth. “Lecture Notes in Probabilistic
+Diffusion Models.” arXiv, December 16, 2023. <a href="https://doi.org/10.48550/arXiv.2312.10393" target="_blank" rel="noopener">https://doi.org/10.48550/arXiv.2312.10393</a>.</p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2025/03/01/attention/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2190,89 +2880,6 @@ done around 2023 March</p>
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://anschen1994.github.io/2022/05/01/nonlinear_analysis/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="AnsChen">
-      <meta itemprop="description" content="Theoretical physics PhD, working on GameAI, interested at quantitative investment">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="AnsChen's Home">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/01/nonlinear_analysis/" class="post-title-link" itemprop="url">因果分析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2022-05-01 00:00:00" itemprop="dateCreated datePublished" datetime="2022-05-01T00:00:00+08:00">2022-05-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-06-23 19:52:18" itemprop="dateModified" datetime="2024-06-23T19:52:18+08:00">2024-06-23</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="非线性因果分析技术">非线性因果分析技术</h1>
-<p>在基础的统计学中，我们学过用协方差矩阵来表征两个高维随机变量<span class="math inline">\(X=(X_1,X_2,\cdots,X_n)^T, Y=(Y_1,Y_2,\cdots,
-Y_m)^T\)</span>之间的相关性。但是，我们知道相关性并不意味着独立性，更加不能准确描述因果性。这篇Blog，我们将持续更新一些因果性分析工具。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/01/nonlinear_analysis/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -2342,7 +2949,7 @@ Y_m)^T\)</span>之间的相关性。但是，我们知道相关性并不意味�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
